@@ -3,6 +3,7 @@ package core
 import (
 	"light_logger/src/util"
 	"sync"
+	"time"
 )
 
 const (
@@ -36,9 +37,10 @@ type LightLogger struct {
 	// 文件名
 	fileName string
 	// 队列
-	cc       chan *RingBuffer
-	capacity int32
-	lock     *sync.Mutex
+	cc           chan *RingBuffer
+	capacity     int32
+	lock         *sync.Mutex
+	lastUpdateAt int64
 }
 
 func NewLightLogger(capacity, maxBufferCount int32) *LightLogger {
@@ -56,7 +58,18 @@ func (that *LightLogger) Start() {
 	go func() {
 		for buffer := range that.cc {
 			that.persistent(buffer)
+			buffer = nil
+		}
+	}()
 
+	go func() {
+		for {
+			now := time.Now().UnixMilli()
+			if now-2000 < that.lastUpdateAt {
+				continue
+			}
+			that.scan()
+			that.lastUpdateAt = time.Now().UnixMilli()
 		}
 	}()
 }
@@ -99,4 +112,18 @@ func (that *LightLogger) persistent(rb *RingBuffer) {
 	util.WriteStringToFile(f, s)
 	util.CloseFile(f)
 	rb.Reset()
+	that.lock.Lock()
+	defer that.lock.Unlock()
+	if that.reserve == nil {
+		that.reserve = rb
+	}
+}
+
+func (that *LightLogger) scan() {
+	if that.lock.TryLock() {
+		defer that.lock.Unlock()
+	} else {
+		return
+	}
+	that.exchangeBuffers()
 }
