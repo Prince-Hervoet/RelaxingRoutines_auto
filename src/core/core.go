@@ -2,128 +2,114 @@ package core
 
 import (
 	"light_logger/src/util"
+	"strconv"
 	"sync"
 	"time"
 )
 
-const (
-	OUT_FILE    = 1
-	OUT_CONSOLE = 2
-)
-
-const DEFAULT_BUFFER_SIZE = int32(65536)
-
-type Logger interface {
-	Info()
-	Warn()
-	Error()
-	Debug()
-}
-
+// 日志器
 type LightLogger struct {
-	// 输出范围
-	isOutToFile bool
-	// 当前使用的缓冲区
-	current *RingBuffer
-	// 预备
-	reserve  *RingBuffer
-	reserveX []*RingBuffer
-	// 最大缓冲区数量
-	maxBufferCount int32
-	// 当前缓冲区数量
-	bufferCount int32
-	// 文件目录路径
-	dir string
-	// 文件名
-	fileName string
-	// 队列
-	cc           chan *RingBuffer
-	capacity     int32
-	lock         *sync.Mutex
-	lastUpdateAt int64
+	current              *Buffer
+	reserve              *Buffer
+	maxBufferCount       int32
+	bufferCount          int32
+	singleBufferCapacity int32
+	tempChannel          chan (*Buffer)
+	lastUpdatedAt        int64
+	dir                  string
+	currentFileName      string
+	lock                 *sync.Mutex
+	cond                 *sync.Cond
 }
 
-func NewLightLogger(capacity, maxBufferCount int32) *LightLogger {
-	tl := &LightLogger{}
-	tl.current = NewRingBuffer(capacity)
-	tl.current = NewRingBuffer(capacity)
-	tl.maxBufferCount = maxBufferCount
-	tl.bufferCount = 2
-	tl.capacity = capacity
-	tl.cc = make(chan *RingBuffer, maxBufferCount)
-	return tl
+func NewLightLogger(maxBufferCount, singleBufferCapacity int32) *LightLogger {
+	ll := &LightLogger{}
+	ll.current = NewBuffer(singleBufferCapacity)
+	ll.reserve = NewBuffer(singleBufferCapacity)
+	ll.maxBufferCount = maxBufferCount
+	ll.bufferCount = 2
+	ll.tempChannel = make(chan *Buffer, maxBufferCount)
+	ll.dir = ""
+	ll.lock = &sync.Mutex{}
+	ll.singleBufferCapacity = singleBufferCapacity
+	ll.cond = sync.NewCond(ll.lock)
+	return ll
+}
+
+func (that *LightLogger) SetDir(dir string) {
+	that.dir = dir
+}
+
+func (that *LightLogger) setReserve(newBuffer *Buffer) bool {
+	that.lock.Lock()
+	defer that.lock.Unlock()
+	if that.reserve == nil {
+		that.reserve = newBuffer
+		that.cond.Broadcast()
+		return true
+	}
+	that.bufferCount--
+	return false
 }
 
 func (that *LightLogger) Start() {
-	go func() {
-		for buffer := range that.cc {
-			that.persistent(buffer)
-			buffer = nil
-		}
-	}()
-
-	go func() {
-		for {
-			now := time.Now().UnixMilli()
-			if now-2000 < that.lastUpdateAt {
-				continue
+	if that.dir != "" {
+		that.lastUpdatedAt = time.Now().UnixMilli()
+		that.currentFileName = strconv.FormatInt(that.lastUpdatedAt, 10) + ".txt"
+		go func() {
+			for buffer := range that.tempChannel {
+				buffer.OutputToFile(that.dir + that.currentFileName)
+				that.setReserve(buffer)
 			}
-			that.scan()
-			that.lastUpdateAt = time.Now().UnixMilli()
-		}
-	}()
-}
+		}()
 
-func (that *LightLogger) Info() {
-
-}
-
-func (that *LightLogger) Warn() {
-}
-
-func (that *LightLogger) Error() {
-
-}
-
-func (that *LightLogger) Debug() {
-
-}
-
-func (that *LightLogger) exchangeBuffers() {
-	that.lock.Lock()
-	defer that.lock.Unlock()
-	if that.current.size == 0 || (that.current.size < that.current.capacity && that.reserve == nil) {
-		return
+		go func() {
+			for {
+				now := time.Now().UnixMilli()
+				if now-2000 < that.lastUpdatedAt {
+					continue
+				}
+				that.scan()
+				that.lastUpdatedAt = time.Now().UnixMilli()
+			}
+		}()
 	}
-	if that.reserve == nil {
-		that.reserve = NewRingBuffer(that.capacity)
-	}
-	temp := that.current
-	that.current = that.reserve
-	that.reserve = temp
-	that.cc <- that.reserve
-	that.reserve = nil
-}
 
-func (that *LightLogger) persistent(rb *RingBuffer) {
-	bs := rb.data[rb.readCursor : rb.writeCursor+1]
-	s := util.ByteSliceToString(bs)
-	f := util.OpenFile(that.dir + that.fileName)
-	util.WriteStringToFile(f, s)
-	util.CloseFile(f)
-	rb.Reset()
-	that.lock.Lock()
-	defer that.lock.Unlock()
-	if that.reserve == nil {
-		that.reserve = rb
-	}
 }
 
 func (that *LightLogger) scan() {
 	if that.lock.TryLock() {
 		defer that.lock.Unlock()
-	} else {
-		return
+		that.exchangeBuffer()
 	}
-	that.exchangeBuffers()
+}
+
+func (that *LightLogger) exchangeBuffer() bool {
+	if that.current.size == 0 {
+		return false
+	}
+	if that.reserve == nil {
+		if that.bufferCount < that.maxBufferCount {
+			that.reserve = NewBuffer(that.singleBufferCapacity)
+			that.bufferCount++
+		} else {
+			return false
+		}
+	}
+	temp := that.current
+	that.current = that.reserve
+	that.tempChannel <- temp
+	that.reserve = nil
+	return true
+}
+
+func (that *LightLogger) Info(content string) {
+	that.lock.Lock()
+	defer that.lock.Unlock()
+	data := util.GetNowTimeSimpleString() + " " + "[INFO] " + content + "\n"
+	for that.current.Write(data) == -1 {
+		if !that.exchangeBuffer() {
+			that.cond.Wait()
+		}
+	}
 }
