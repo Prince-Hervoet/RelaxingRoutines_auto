@@ -14,9 +14,7 @@ void Executor::taskRunningFunc(Executor *executor)
 
 Soroutine *Executor::getBuffer()
 {
-    mu.lock();
     Soroutine *so = rb.getOne();
-    mu.unlock();
     return so;
 }
 
@@ -26,9 +24,9 @@ bool Executor::addRoutine(Soroutine *routine)
     {
         return false;
     }
-    mu.lock();
+    std::unique_lock<std::mutex> lock(mu);
     activeRoutines.add(*routine);
-    mu.unlock();
+    cond.notify_one();
     return true;
 }
 
@@ -61,6 +59,7 @@ void Executor::resumeRoutine()
         Soroutine *so = getActiveRoutine();
         if (so)
         {
+            prevResumeTimestamp = getNowTimestamp();
             // 运行so
         }
         if (status == EXECUTOR_STOP)

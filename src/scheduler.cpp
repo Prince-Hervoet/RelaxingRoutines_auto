@@ -1,5 +1,6 @@
 #include "scheduler.hpp"
 #include "executor.hpp"
+#include <string.h>
 
 void Scheduler::addTask(TaskFunc task)
 {
@@ -31,4 +32,13 @@ void Scheduler::addTask(TaskFunc task)
             break;
         }
     }
+}
+
+void Scheduler::setRoutineInfo(Soroutine *so, TaskFunc task, void *args)
+{
+    if (!so)
+    {
+        return;
+    }
+    so->setTask(task, args);
 }

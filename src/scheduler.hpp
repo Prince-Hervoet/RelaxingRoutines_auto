@@ -1,16 +1,19 @@
 #include <vector>
 #include <mutex>
-#include "util.hpp"
+#include "soroutine.hpp"
 
 class Executor;
 class Scheduler
 {
+    friend class Soroutine;
+
 private:
     std::vector<Executor *> executors;
     int taskSize = 0;
     int stackSize = STACK_SIZE;
     std::mutex mu;
     Soroutine *createRoutine();
+    void setRoutineInfo(Soroutine *so, TaskFunc task, void *args);
     void createThread();
     void distributeRoutine();
     void checkRoutine();

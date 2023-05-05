@@ -43,6 +43,7 @@ public:
     {
         ListNode<T> *node = new ListNode<T>();
         node->data = &t;
+        // std::unique_lock<std::mutex> lock(mu);
         if (!head || !tail)
         {
             head = node;
@@ -60,6 +61,7 @@ public:
         {
             return nullptr
         }
+        // std::unique_lock<std::mutex> lock(mu);
         ListNode *temp = head->next;
         ListNode *target = head;
         head->next = nullptr;

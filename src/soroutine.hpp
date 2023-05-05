@@ -77,4 +77,9 @@ public:
     {
         return args;
     }
+
+    ucontext_t &getContext()
+    {
+        return context;
+    }
 };

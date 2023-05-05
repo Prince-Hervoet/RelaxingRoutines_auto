@@ -1,4 +1,5 @@
 #include <list>
+#include <mutex>
 #include "soroutine.hpp"
 
 template <typename T>
@@ -6,6 +7,7 @@ class RoutineBuffer
 {
 private:
     std::list<T *> buffer;
+    std::mutex mu;
     int limit = 16;
 
 public:
@@ -33,6 +35,7 @@ public:
         {
             return nullptr;
         }
+        std::unique_lock<std::mutex> lock(mu);
         T *t = buffer.front();
         buffer.pop_front();
         return t;
@@ -44,6 +47,7 @@ public:
         {
             return;
         }
+        std::unique_lock<std::mutex> lock(mu);
         buffer.push_back(so);
     }
 

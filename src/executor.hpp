@@ -3,6 +3,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <vector>
+#include <ucontext.h>
 #include "scheduler.hpp"
 #include "soroutine.hpp"
 #include "single_list_queue.hpp"
@@ -18,14 +19,21 @@ private:
     Scheduler *sc;
     std::mutex mu;
     std::condition_variable cond;
+
     volatile uint64_t prevResumeTimestamp;
     uint64_t timeout;
+
     SingleListQueue<Soroutine> activeRoutines;
     RoutineBuffer<Soroutine> rb;
     Soroutine *running;
+
+    ucontext_t host;
+
+    // run routines
     void resumeRoutine();
-    static void taskRunningFunc(Executor *executor);
+    // get active routines
     Soroutine *getActiveRoutine();
+    static void taskRunningFunc(Executor *executor);
 
 public:
     void setRunning()
