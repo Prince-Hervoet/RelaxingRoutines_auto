@@ -41,22 +41,7 @@ public:
         this->args = args;
     }
 
-    void setStack(int newSize)
-    {
-        if (this->myStack && alreadySize > 0 && newSize == 0)
-        {
-            delete[] myStack;
-            this->size = 0;
-            alreadySize = 0;
-        }
-        else if (this->myStack && alreadySize > 0 && alreadySize != newSize)
-        {
-            delete[] myStack;
-            myStack = new char[newSize];
-            alreadySize = newSize;
-            this->size = 0;
-        }
-    }
+    void setStack(int newSize);
 
     int getSize()
     {

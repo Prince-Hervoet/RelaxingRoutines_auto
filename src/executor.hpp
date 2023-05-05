@@ -13,31 +13,25 @@
 class Executor
 {
 private:
-    uint64_t tid;
-    volatile int limit = 0;
-    volatile int status = EXECUTOR_WAIT;
-    Scheduler *sc;
+    uint64_t tid; // thread id
+    uint64_t timeout;
+    Scheduler *sc; // its scheduler
     std::mutex mu;
     std::condition_variable cond;
-
-    volatile uint64_t prevResumeTimestamp;
-    uint64_t timeout;
-
-    SingleListQueue<Soroutine> activeRoutines;
+    volatile int status = EXECUTOR_WAIT;      // the status of this thread
+    volatile uint64_t prevResumeTimestamp;    // lastUpdateAt -- judge block
+    SingleListQueue<Soroutine> localRoutines; // a local queue in this thread
     Soroutine *running;
-
     ucontext_t host;
 
-    // run routines
-    void resumeRoutine();
-    // get active routines
-    Soroutine *getActiveRoutine();
+    void resumeRoutine();          // run routines
+    Soroutine *getActiveRoutine(); // get active routines
     static void taskRunningFunc(Executor *executor);
 
 public:
     int getSize()
     {
-        return activeRoutines.getSize();
+        return localRoutines.getSize();
     }
     bool addRoutine(Soroutine *routine);
     bool isTimeout();

@@ -69,4 +69,8 @@ public:
         size -= 1;
         return target;
     }
+
+    void joinOtherList(SingleListQueue *other)
+    {
+    }
 };
