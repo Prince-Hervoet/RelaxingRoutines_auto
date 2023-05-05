@@ -24,7 +24,6 @@ private:
     uint64_t timeout;
 
     SingleListQueue<Soroutine> activeRoutines;
-    RoutineBuffer<Soroutine> rb;
     Soroutine *running;
 
     ucontext_t host;
@@ -58,10 +57,8 @@ public:
 
     int getSize()
     {
-        return rb.getSize();
+        return activeRoutines.getSize();
     }
-
-    Soroutine *getBuffer();
     bool addRoutine(Soroutine *routine);
     bool isTimeout();
     std::vector<Soroutine *> catchRoutines(int count);

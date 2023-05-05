@@ -2,20 +2,10 @@
 
 void Executor::taskRunningFunc(Executor *executor)
 {
-    executor->status = EXECUTOR_RUNNING;
     if (executor->running)
     {
         (executor->running->getTask())(executor->running->getArgs());
     }
-    executor->rb.giveBack(executor->running);
-    executor->running = nullptr;
-    executor->status = EXECUTOR_WAIT;
-}
-
-Soroutine *Executor::getBuffer()
-{
-    Soroutine *so = rb.getOne();
-    return so;
 }
 
 bool Executor::addRoutine(Soroutine *routine)
