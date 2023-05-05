@@ -14,7 +14,6 @@ bool Executor::addRoutine(Soroutine *routine)
     {
         return false;
     }
-    std::unique_lock<std::mutex> lock(mu);
     activeRoutines.add(*routine);
     cond.notify_one();
     return true;
@@ -33,10 +32,9 @@ bool Executor::isTimeout()
 
 Soroutine *Executor::getActiveRoutine()
 {
-    std::unique_lock<std::mutex> lock(mu);
-    while (activeRoutines.getSize() == 0)
+    if (activeRoutines.getSize() == 0)
     {
-        cond.wait(lock);
+        return nullptr;
     }
     Soroutine *so = activeRoutines.getFirst();
     return so;

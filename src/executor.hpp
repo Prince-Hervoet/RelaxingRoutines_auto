@@ -35,26 +35,6 @@ private:
     static void taskRunningFunc(Executor *executor);
 
 public:
-    void setRunning()
-    {
-        mu.lock();
-        status = EXECUTOR_RUNNING;
-        mu.unlock();
-    }
-    void setWait()
-    {
-        mu.lock();
-        status = EXECUTOR_WAIT;
-        mu.unlock();
-    }
-
-    void setPending()
-    {
-        mu.lock();
-        status = EXECUTOR_PENDING;
-        mu.unlock();
-    }
-
     int getSize()
     {
         return activeRoutines.getSize();
