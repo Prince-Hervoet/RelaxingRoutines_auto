@@ -12,6 +12,8 @@ const int EXECUTOR_RUNNING = 1;
 const int EXECUTOR_PENDING = 2;
 const int EXECUTOR_STOP = -1;
 
+#define ROUTINE_QUEUE_SIZE 64
+
 #define STACK_SIZE 131072
 
 typedef void (*TaskFunc)(void *);

@@ -43,13 +43,25 @@ bool Executor::isTimeout()
     return false;
 }
 
+Soroutine *Executor::getActiveRoutine()
+{
+    std::unique_lock<std::mutex> lock(mu);
+    while (activeRoutines.getSize() == 0)
+    {
+        cond.wait(lock);
+    }
+    Soroutine *so = activeRoutines.getFirst();
+    return so;
+}
+
 void Executor::resumeRoutine()
 {
     for (;;)
     {
-        while (activeRoutines.getSize() > 0)
+        Soroutine *so = getActiveRoutine();
+        if (so)
         {
-            Soroutine *so = activeRoutines.getFirst();
+            // 运行so
         }
         if (status == EXECUTOR_STOP)
         {

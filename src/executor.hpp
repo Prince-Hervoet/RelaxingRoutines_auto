@@ -25,6 +25,7 @@ private:
     Soroutine *running;
     void resumeRoutine();
     static void taskRunningFunc(Executor *executor);
+    Soroutine *getActiveRoutine();
 
 public:
     void setRunning()
@@ -46,6 +47,12 @@ public:
         status = EXECUTOR_PENDING;
         mu.unlock();
     }
+
+    int getSize()
+    {
+        return rb.getSize();
+    }
+
     Soroutine *getBuffer();
     bool addRoutine(Soroutine *routine);
     bool isTimeout();

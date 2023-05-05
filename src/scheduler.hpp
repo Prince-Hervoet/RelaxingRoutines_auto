@@ -10,7 +10,7 @@ private:
     int taskSize = 0;
     int stackSize = STACK_SIZE;
     std::mutex mu;
-    void createRoutine();
+    Soroutine *createRoutine();
     void createThread();
     void distributeRoutine();
     void checkRoutine();

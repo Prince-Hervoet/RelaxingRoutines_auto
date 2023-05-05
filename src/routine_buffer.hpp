@@ -46,4 +46,9 @@ public:
         }
         buffer.push_back(so);
     }
+
+    int getSize()
+    {
+        return buffer.size();
+    }
 };
