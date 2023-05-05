@@ -67,4 +67,14 @@ public:
     {
         return hasSize;
     }
+
+    TaskFunc getTask()
+    {
+        return task;
+    }
+
+    void *getArgs()
+    {
+        return args;
+    }
 };

@@ -16,7 +16,7 @@ private:
     void checkRoutine();
 
 public:
-    void addTask();
+    void addTask(TaskFunc task);
     void setStackSize(int size)
     {
         mu.lock();
