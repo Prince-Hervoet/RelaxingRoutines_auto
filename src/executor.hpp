@@ -1,3 +1,6 @@
+#ifndef __EXECUTOR_H__
+#define __EXECUTOR_H__
+
 #include <iostream>
 #include <cstdint>
 #include <mutex>
@@ -36,3 +39,4 @@ public:
     bool isTimeout();
     std::vector<Soroutine *> catchRoutines(int count);
 };
+#endif
