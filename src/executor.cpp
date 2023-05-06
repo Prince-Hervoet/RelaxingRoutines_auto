@@ -7,14 +7,13 @@ void Executor::taskRunningFunc(Executor *executor)
     {
         (executor->running->getTask())(executor->running->getArgs());
     }
-    executor->rb.giveBack(executor->running);
     executor->running = nullptr;
     executor->status = EXECUTOR_WAIT;
 }
 
 Soroutine *Executor::getBuffer()
 {
-    Soroutine *so = rb.getOne();
+    Soroutine *so;
     return so;
 }
 

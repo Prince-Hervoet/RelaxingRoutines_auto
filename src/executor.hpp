@@ -7,7 +7,6 @@
 #include "scheduler.hpp"
 #include "soroutine.hpp"
 #include "single_list_queue.hpp"
-#include "routine_buffer.hpp"
 #include "util.hpp"
 
 class Executor
@@ -24,7 +23,6 @@ private:
     uint64_t timeout;
 
     SingleListQueue<Soroutine> activeRoutines;
-    RoutineBuffer<Soroutine> rb;
     Soroutine *running;
 
     ucontext_t host;
@@ -58,7 +56,7 @@ public:
 
     int getSize()
     {
-        return rb.getSize();
+        
     }
 
     Soroutine *getBuffer();
