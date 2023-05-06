@@ -1,3 +1,6 @@
+#ifndef __SCHEDULER_H__
+#define __SCHEDULER_H__
+
 #include <vector>
 #include <mutex>
 #include <semaphore.h>
@@ -61,3 +64,5 @@ public:
     {
     }
 };
+
+#endif
