@@ -1,10 +1,6 @@
 #include "executor.hpp"
 
-void Executor::taskRunningFunc(Executor *executor)
-{
-}
-
-bool Executor::addRoutine(Soroutine *routine)
+bool Executor::addToLocalQueue(Soroutine *routine)
 {
     if (!routine)
     {

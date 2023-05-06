@@ -1,12 +1,10 @@
 #include "scheduler.hpp"
 #include "executor.hpp"
-#include "contextPool.hpp"
 #include <string.h>
 #include <thread>
 
 void Scheduler::addTask(TaskFunc task, void *args)
 {
-    contextPool *cp = new contextPool();
     Soroutine *packing = cp->getContext();
     if (packing)
     {
@@ -14,10 +12,15 @@ void Scheduler::addTask(TaskFunc task, void *args)
         packing->setStatus(ROUTINE_READY);
         ucontext_t context = packing->getContext();
         // todo: set context
-        if (sem_trywait(&sem) == -1)
+
+        Executor *executor = this->freeExecutors.poll();
+        if (executor)
         {
-            // if go here,the sem is zero.
-            globalTaskQueue.add(*packing);
+            executor->addToLocalQueue(packing);
+        }
+        else
+        {
+            this->globalTaskQueue.add(*packing);
         }
     }
 }
@@ -34,11 +37,11 @@ void Scheduler::setRoutineInfo(Soroutine *so, TaskFunc task, void *args)
 Scheduler::Scheduler()
 {
     systemCoreSize = std::thread::hardware_concurrency();
-    int temp = systemCoreSize * 2;
-    for (int i = 0; i < temp; i++)
+    for (int i = 0; i < systemCoreSize; i++)
     {
         Executor *executor = new Executor();
         executors.push_back(executor);
     }
-    sem_init(&sem, 0, temp);
+    cp = new contextPool();
+    sem_init(&sem, 0, systemCoreSize);
 }

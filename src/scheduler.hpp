@@ -1,6 +1,7 @@
 #include <vector>
 #include <mutex>
 #include <semaphore.h>
+#include "contextPool.hpp"
 #include "soroutine.hpp"
 #include "single_list_queue.hpp"
 
@@ -9,8 +10,10 @@ class Scheduler
 {
 private:
     int systemCoreSize = 0;
-    std::vector<Executor *> executors;          // all executors
+    std::vector<Executor *> executors; // all executors
+    SingleListQueue<Executor> freeExecutors;
     SingleListQueue<Soroutine> globalTaskQueue; // wait queue
+    contextPool *cp;
     int taskSize = 0;
     int stackSize = STACK_SIZE;
     std::mutex mu;
@@ -52,5 +55,9 @@ public:
     int getTaskQueueSize()
     {
         return globalTaskQueue.getSize();
+    }
+
+    void semWait()
+    {
     }
 };

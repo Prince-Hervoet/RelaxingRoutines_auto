@@ -16,23 +16,25 @@ private:
     uint64_t timeout;
     Scheduler *sc; // its scheduler
     std::mutex mu;
+    Soroutine *running;
+    ucontext_t host;
     std::condition_variable cond;
     volatile int status = EXECUTOR_WAIT;      // the status of this thread
     volatile uint64_t prevResumeTimestamp;    // lastUpdateAt -- judge block
     SingleListQueue<Soroutine> localRoutines; // a local queue in this thread
-    Soroutine *running;
-    ucontext_t host;
 
     void resumeRoutine();          // run routines
     Soroutine *getActiveRoutine(); // get active routines
-    static void taskRunningFunc(Executor *executor);
 
 public:
+    bool isTimeout();
+    void startRun();
+    void checkGlobalQueue();
+    bool addToLocalQueue(Soroutine *routine);
+    SingleListQueue<Soroutine> *catchRoutines(int count);
+
     int getSize()
     {
         return localRoutines.getSize();
     }
-    bool addRoutine(Soroutine *routine);
-    bool isTimeout();
-    std::vector<Soroutine *> catchRoutines(int count);
 };
