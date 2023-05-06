@@ -7,7 +7,6 @@
 #include "scheduler.hpp"
 #include "soroutine.hpp"
 #include "single_list_queue.hpp"
-#include "routine_buffer.hpp"
 #include "util.hpp"
 
 class Executor
