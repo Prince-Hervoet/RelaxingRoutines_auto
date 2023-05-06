@@ -38,7 +38,7 @@ Soroutine *Executor::getActiveRoutine()
     {
         return nullptr;
     }
-    Soroutine *so = localRoutines.getFirst();
+    Soroutine *so = localRoutines.poll();
     return so;
 }
 

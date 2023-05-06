@@ -1,21 +1,20 @@
 #include <vector>
 #include <mutex>
+#include <semaphore.h>
 #include "soroutine.hpp"
 #include "single_list_queue.hpp"
 
 class Executor;
 class Scheduler
 {
-    friend class Soroutine;
-
 private:
     int systemCoreSize = 0;
-    std::vector<Executor *> executors;         // all executors
-    SingleListQueue<Executor> freeExecutors;   // free queue
-    SingleListQueue<TaskFunc> globalTaskQueue; // wait queue
+    std::vector<Executor *> executors;          // all executors
+    SingleListQueue<Soroutine> globalTaskQueue; // wait queue
     int taskSize = 0;
     int stackSize = STACK_SIZE;
     std::mutex mu;
+    sem_t sem;
     Soroutine *createRoutine();
     void setRoutineInfo(Soroutine *so, TaskFunc task, void *args);
     void createThread();
@@ -24,7 +23,7 @@ private:
 
 public:
     Scheduler();
-    void addTask(TaskFunc task);
+    void addTask(TaskFunc task, void *args);
     void addFreeExecutor(Executor *executor);
     void setStackSize(int size)
     {

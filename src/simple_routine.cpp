@@ -7,8 +7,8 @@ static Scheduler &getScheduler()
     return sc;
 }
 
-void simple_start(TaskFunc task)
+void simple_start(TaskFunc task, void *args)
 {
     Scheduler &sc = getScheduler();
-    sc.addTask(task);
+    sc.addTask(task, args);
 }

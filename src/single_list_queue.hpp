@@ -55,22 +55,67 @@ public:
         size += 1;
     }
 
-    T *getFirst()
+    T *poll()
     {
         if (size == 0)
         {
             return nullptr
         }
         std::unique_lock<std::mutex> lock(mu);
-        ListNode *temp = head->next;
-        ListNode *target = head;
+        ListNode<T> *temp = head->next;
+        ListNode<T> *target = head;
+        T *t = target->data;
         head->next = nullptr;
         head = temp;
         size -= 1;
-        return target;
+        delete target;
+        return t;
     }
 
-    void joinOtherList(SingleListQueue *other)
+    SingleListQueue<T> *pollMany(int need)
     {
+        if (need <= 0)
+        {
+            return nullptr;
+        }
+        std::unique_lock<std::mutex> lock(mu);
+        ListNode<T> *run = head;
+        SingleListQueue *sq = nullptr;
+        while (run->next && need > 0)
+        {
+            run = run->next;
+            need -= 1;
+        }
+        ListNode<T> *temp = head;
+        head = run->next;
+        sq = new SingleListQueue();
+        sq->head = temp;
+        sq->tail = run;
+        if (!head)
+        {
+            tail = nullptr;
+        }
+        size = need > size ? 0 : size - need;
+        return sq;
+    }
+
+    void joinOther(SingleListQueue<T> *sq)
+    {
+        if (!sq)
+        {
+            return;
+        }
+        std::unique_lock<std::mutex> lock(mu);
+        if (head)
+        {
+            tail->next = sq->head;
+            tail = sq->tail;
+        }
+        else
+        {
+            head = sq->head;
+            tail = sq->tail;
+        }
+        size += sq->size;
     }
 };
