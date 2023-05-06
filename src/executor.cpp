@@ -10,12 +10,6 @@ void Executor::taskRunningFunc(Executor *executor)
     executor->status = EXECUTOR_WAIT;
 }
 
-Soroutine *Executor::getBuffer()
-{
-    Soroutine *so;
-    return so;
-}
-
 bool Executor::addRoutine(Soroutine *routine)
 {
     if (!routine)
