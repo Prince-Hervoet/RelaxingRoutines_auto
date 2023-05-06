@@ -14,13 +14,13 @@ private:
     int status = ROUTINE_INIT;
 
 public:
+    Soroutine(TaskFunc task, void *args);
+    Soroutine(TaskFunc task, void *args, int stackSize);
+    void setStack(int newSize);
+
     Soroutine()
     {
     }
-
-    Soroutine(TaskFunc task, void *args);
-
-    Soroutine(TaskFunc task, void *args, int stackSize);
 
     ~Soroutine()
     {
@@ -40,8 +40,6 @@ public:
         this->task = task;
         this->args = args;
     }
-
-    void setStack(int newSize);
 
     int getSize()
     {

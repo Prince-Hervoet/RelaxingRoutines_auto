@@ -40,4 +40,5 @@ Scheduler::Scheduler()
         Executor *executor = new Executor();
         executors.push_back(executor);
     }
+    sem_init(&sem, 0, temp);
 }

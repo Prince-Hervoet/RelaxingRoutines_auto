@@ -24,7 +24,6 @@ private:
 public:
     Scheduler();
     void addTask(TaskFunc task, void *args);
-    void addFreeExecutor(Executor *executor);
     void setStackSize(int size)
     {
         mu.lock();
@@ -48,5 +47,10 @@ public:
     int getThreadSize()
     {
         return executors.size();
+    }
+
+    int getTaskQueueSize()
+    {
+        return globalTaskQueue.getSize();
     }
 };
