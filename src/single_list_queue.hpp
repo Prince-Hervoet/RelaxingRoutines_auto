@@ -15,6 +15,7 @@ class SingleListQueue
 private:
     int size = 0;
     int limit = 0;
+    std::mutex mu;
     ListNode<T> *head;
     ListNode<T> *tail;
 

@@ -5,113 +5,176 @@
 #include <queue>
 #include <vector>
 #include "soroutine.hpp"
+#include "single_list_queue.hpp"
 
 #define DEFAULT_CAPACILITY  1024
+#define MAX_CAPACITY        16384
 
 class contextPool
 {
 private:
-    int capacity = DEFAULT_CAPACILITY;          //协程上下文结构体最大存放量
+    int capacity = DEFAULT_CAPACILITY;          //the capacity of pool
     int remainSize = DEFAULT_CAPACILITY;
-    std::mutex poolMutex;                       //线程池锁
-    std::queue<Soroutine *> qu;                   //线程池队列
+    SingleListQueue<Soroutine> qu;              //quque of the pool
 
 public:
     contextPool(int size);
     contextPool();
     ~contextPool();
     Soroutine *getContext();
-    std::vector<Soroutine *> getContext(int num); // 获取指定数量的协程上下文
-    bool giveBacktoPool(Soroutine *back);           //回收协程上下文
-    bool giveBacktoPool(std::vector<Soroutine *> back);
+    bool giveBacktoPool(Soroutine *back);
+    bool giveBacktoPool(SingleListQueue<Soroutine> *back);
+    bool changeCapacity(int num);
 
-        inline int
-        getRemainSize()
+    inline int getRemainSize()
     {
         return remainSize;
+    }
+
+    inline bool poolIsEmpty()
+    {
+        return !(remainSize > 0);
+    }
+
+    inline bool poolIsFull()
+    {
+        return remainSize == capacity;
     }
 };
 
 contextPool::contextPool(int size) : capacity(size), remainSize(size)
 {
-    poolMutex.lock();
-    for (int i = 0; i < capacity; i++)
+    Soroutine *ptr = nullptr;
+    for (int i = 0; i < size; i++)
     {
-        Soroutine *ptr = new Soroutine;
-        qu.push(ptr);
+        ptr = new Soroutine;
+        qu.add(*ptr);
     }
-    poolMutex.unlock();
 }
 
 contextPool::contextPool()
 {
-    poolMutex.lock();
+    Soroutine *ptr = nullptr;
     for (int i = 0; i < capacity; i++)
     {
-        Soroutine *ptr = new Soroutine;
-        qu.push(ptr);
+        ptr = new Soroutine;
+        qu.add(*ptr);
     }
-    poolMutex.unlock();
 }
+
 
 contextPool::~contextPool()
 {
-    for (int i = 0; i < capacity; i++)
+    Soroutine *ptr = nullptr;
+    for (int i = 0; i < getRemainSize(); i++)
     {
-        qu.pop();   
+        ptr = qu.poll();
+        delete ptr;
     }
 }
 
+/**
+ * @brief get soroutine from pool
+ * 
+ * @return Soroutine* 
+ */
 Soroutine *contextPool::getContext()
 {
-    Soroutine *out;
-    poolMutex.lock();
-    
-    if (!qu.empty())
+    Soroutine *out = nullptr;
+    if (!poolIsEmpty())
     {
-        out = qu.front();
-        qu.pop();
+        out = qu.poll();
         remainSize--;
     }
-
-    poolMutex.unlock();
+    else
+    {
+        out = new Soroutine;            //when pool is empty alloc a class
+    }
     return out;
 }
 
-std::vector<Soroutine *> contextPool::getContext(int num)
-{
-    std::vector<Soroutine *> out;
-    Soroutine *ptr;
-    poolMutex.lock();
-    
-    for (int i = 0; i < num && !qu.empty(); i++)
-    {
-        ptr = qu.front();
-        qu.pop();
-        out.emplace_back(ptr);
-        remainSize--;
-    }
-
-    poolMutex.unlock();
-    return out;
-}
-
+/**
+ * @brief 
+ * 
+ * @param back 
+ * @return true give back succese
+ * @return false when the parament is a null pointer
+ */
 bool contextPool::giveBacktoPool(Soroutine *back)
 {
-    poolMutex.lock();
-    qu.push(back);
-    poolMutex.unlock();
+    if (back == nullptr)
+    {
+        return false;
+    }
+
+    if (!poolIsFull())
+    {
+        qu.add(*back);
+        remainSize++;
+    }
+    else
+    {
+        delete back;
+    }
+
     return true;
 }
 
-bool contextPool::giveBacktoPool(std::vector<Soroutine *> back)
+bool contextPool::giveBacktoPool(SingleListQueue<Soroutine> *back)
 {
-    poolMutex.lock();
-    for (auto x : back)
+    if (back == nullptr)
     {
-        qu.push(x);
+        return false;
     }
-    poolMutex.unlock();
+    
+    //if pool don't have enough space to push
+    if (back->getSize() > capacity - remainSize)
+    {
+        SingleListQueue<Soroutine> *x = back->pollMany(back->getSize() - (capacity - remainSize));
+        while (x->getSize() > 0)
+        {
+            delete x->poll();
+        }
+    }
+    qu.joinOther(back);
+    remainSize += back->getSize();
+
+    return true;
+}
+
+bool contextPool::changeCapacity(int num)
+{
+    if (num < 0 || num > MAX_CAPACITY)
+    {
+        return false;
+    }
+
+    int differ;
+    if (num > capacity)
+    {
+        differ = num - capacity;
+        Soroutine *ptr;
+        for (int i = 0; i < differ; i++)
+        {
+            ptr = new Soroutine;
+            qu.add(*ptr);
+        }
+        remainSize += differ;
+    }
+    else
+    {
+        if (remainSize > num)
+        {
+            differ = remainSize - num;
+            for (int i = 0; i < differ; i++)
+            {
+                delete qu.poll();
+            }
+            remainSize = num;
+        }
+    }
+    capacity = num;
+    return true;
 }
 
 #endif
