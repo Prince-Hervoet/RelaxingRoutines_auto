@@ -1,6 +1,7 @@
 #include <vector>
 #include <mutex>
 #include "soroutine.hpp"
+#include "single_list_queue.hpp"
 
 class Executor;
 class Scheduler
@@ -8,7 +9,10 @@ class Scheduler
     friend class Soroutine;
 
 private:
-    std::vector<Executor *> executors;
+    int systemCoreSize = 0;
+    std::vector<Executor *> executors;         // all executors
+    SingleListQueue<Executor> freeExecutors;   // free queue
+    SingleListQueue<TaskFunc> globalTaskQueue; // wait queue
     int taskSize = 0;
     int stackSize = STACK_SIZE;
     std::mutex mu;
@@ -19,7 +23,9 @@ private:
     void checkRoutine();
 
 public:
+    Scheduler();
     void addTask(TaskFunc task);
+    void addFreeExecutor(Executor *executor);
     void setStackSize(int size)
     {
         mu.lock();

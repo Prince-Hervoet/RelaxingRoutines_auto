@@ -1,6 +1,7 @@
 #include "scheduler.hpp"
 #include "executor.hpp"
 #include <string.h>
+#include <thread>
 
 void Scheduler::addTask(TaskFunc task)
 {
@@ -41,4 +42,15 @@ void Scheduler::setRoutineInfo(Soroutine *so, TaskFunc task, void *args)
         return;
     }
     so->setTask(task, args);
+}
+
+Scheduler::Scheduler()
+{
+    systemCoreSize = std::thread::hardware_concurrency();
+    int temp = systemCoreSize * 2;
+    for (int i = 0; i < temp; i++)
+    {
+        Executor *executor = new Executor();
+        executors.push_back(executor);
+    }
 }

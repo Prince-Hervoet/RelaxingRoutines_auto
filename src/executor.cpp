@@ -16,7 +16,7 @@ bool Executor::addRoutine(Soroutine *routine)
     {
         return false;
     }
-    activeRoutines.add(*routine);
+    localRoutines.add(*routine);
     cond.notify_one();
     return true;
 }
@@ -34,11 +34,11 @@ bool Executor::isTimeout()
 
 Soroutine *Executor::getActiveRoutine()
 {
-    if (activeRoutines.getSize() == 0)
+    if (localRoutines.getSize() == 0)
     {
         return nullptr;
     }
-    Soroutine *so = activeRoutines.getFirst();
+    Soroutine *so = localRoutines.getFirst();
     return so;
 }
 
