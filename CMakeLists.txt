@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.5)
+project(SimpleNetRoutine-auto)
+aux_source_directory(./src DIR_SOURCES_1)
+include_directories(./src)
+add_executable(SNR_AUTO ${DIR_SOURCES_1})
