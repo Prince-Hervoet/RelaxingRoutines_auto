@@ -1,3 +1,6 @@
+#ifndef __SOROUTINE_H__
+#define __SOROUTINE_H__
+
 #include <ucontext.h>
 #include "util.hpp"
 
@@ -66,3 +69,5 @@ public:
         return context;
     }
 };
+
+#endif
