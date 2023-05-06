@@ -72,5 +72,5 @@ public:
 
     void joinOtherList(SingleListQueue *other)
     {
-    }
+        }
 };
