@@ -24,7 +24,6 @@ private:
     uint64_t timeout;
 
     SingleListQueue<Soroutine> activeRoutines;
-    RoutineBuffer<Soroutine> rb;
     Soroutine *running;
 
     ucontext_t host;
@@ -36,32 +35,10 @@ private:
     static void taskRunningFunc(Executor *executor);
 
 public:
-    void setRunning()
-    {
-        mu.lock();
-        status = EXECUTOR_RUNNING;
-        mu.unlock();
-    }
-    void setWait()
-    {
-        mu.lock();
-        status = EXECUTOR_WAIT;
-        mu.unlock();
-    }
-
-    void setPending()
-    {
-        mu.lock();
-        status = EXECUTOR_PENDING;
-        mu.unlock();
-    }
-
     int getSize()
     {
-        return rb.getSize();
+        return activeRoutines.getSize();
     }
-
-    Soroutine *getBuffer();
     bool addRoutine(Soroutine *routine);
     bool isTimeout();
     std::vector<Soroutine *> catchRoutines(int count);
