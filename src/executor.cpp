@@ -6,6 +6,8 @@ void Executor::taskRunningFunc(Executor *executor)
     {
         (executor->running->getTask())(executor->running->getArgs());
     }
+    executor->running = nullptr;
+    executor->status = EXECUTOR_WAIT;
 }
 
 bool Executor::addRoutine(Soroutine *routine)
