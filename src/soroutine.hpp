@@ -7,7 +7,7 @@ class Soroutine
 private:
     char *myStack;
     int size = 0;
-    int hasSize = 0;
+    int alreadySize = 0;
     TaskFunc task;
     void *args;
     ucontext_t context;
@@ -43,17 +43,17 @@ public:
 
     void setStack(int newSize)
     {
-        if (this->myStack && hasSize > 0 && newSize == 0)
+        if (this->myStack && alreadySize > 0 && newSize == 0)
         {
             delete[] myStack;
             this->size = 0;
-            hasSize = 0;
+            alreadySize = 0;
         }
-        else if (this->myStack && hasSize > 0 && hasSize != newSize)
+        else if (this->myStack && alreadySize > 0 && alreadySize != newSize)
         {
             delete[] myStack;
             myStack = new char[newSize];
-            hasSize = newSize;
+            alreadySize = newSize;
             this->size = 0;
         }
     }
@@ -65,7 +65,7 @@ public:
 
     int getStackSize()
     {
-        return hasSize;
+        return alreadySize;
     }
 
     TaskFunc getTask()

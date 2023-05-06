@@ -14,7 +14,7 @@ void Scheduler::addTask(TaskFunc task)
             if (executor->getSize() < ROUTINE_QUEUE_SIZE)
             {
                 isOk = true;
-                Soroutine *old = executor->getBuffer();
+                Soroutine *old = nullptr;
                 if (old)
                 {
                     executor->addRoutine(old);
