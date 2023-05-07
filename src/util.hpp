@@ -1,27 +1,32 @@
 #pragma once
 #include <cstdint>
-#include <chrono>
 
-/**
- * the status of a routine
- */
-#define ROUTINE_INIT 10
-#define ROUTINE_READY 11
-#define ROUTINE_RUNNING 12
-#define ROUTINE_PENDING 13
+typedef void (*TaskFunc)(void *args);
+typedef void (*ExecutorFunc)(void *args);
 
-/**
- * the status of a executor
- */
-const int EXECUTOR_WAIT = 0;
-const int EXECUTOR_RUNNING = 1;
-const int EXECUTOR_PENDING = 2;
-const int EXECUTOR_STOP = -1;
+#define TASK_MAX_TIMEOUT 50
 
-#define ROUTINE_QUEUE_SIZE 128
+#define ROUTINE_STATUS_INIT 10
+#define ROUTINE_STATUS_READY 20
+#define ROUTINE_STATUS_RUNNING 30
+#define ROUTINE_STATUS_PENDING 40
+#define ROUTINE_STATUS_DEAD 50
 
-#define STACK_SIZE 131072
+#define EXECUTOR_STATUS_RUNNING 100
+#define EXECUTOR_STATUS_PENDING 200
+#define EXECUTOR_STATUS_STOP 300
 
-typedef void (*TaskFunc)(void *);
+#define ROUTINE_THREAD_LEADER 22
+#define ROUTINE_THREAD_HELPER 33
+#define ROUTINE_THREAD_PENDING 44
+
+#define LEADER_MAX_ROUTINE 64
+#define HELPER_MAX_ROUTINE 256
+#define LEADER_SWAP_ROUTINE 31
+
+#define MAX_ROUTINE_THREAD 1024
+#define CORE_ROUTINE_THREAD 16
+
+#define ONCE_GET_WAIT_COUNT 128
 
 uint64_t getNowTimestamp();

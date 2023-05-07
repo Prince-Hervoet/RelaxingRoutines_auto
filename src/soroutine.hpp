@@ -1,25 +1,34 @@
-#ifndef __SOROUTINE_H__
-#define __SOROUTINE_H__
-
-#include <ucontext.h>
+#pragma once
 #include "util.hpp"
+#include <ucontext.h>
 
 class Executor;
+class Scheduler;
+class RoutineThread;
+
 class Soroutine
 {
+    friend class Scheduler;
+    friend class RoutineThread;
+
 private:
-    char *myStack;
-    int size = 0;
-    int alreadySize = 0;
-    TaskFunc task;
+    uint64_t sid;  // id
+    TaskFunc task; // task pointer
     void *args;
+    char *runtimeStack;
+    int currentSize = 0;
+    int totalSize = 0;
+    Executor *et;
     ucontext_t context;
-    int status = ROUTINE_INIT;
+    int status = ROUTINE_STATUS_INIT;
 
 public:
-    Soroutine(TaskFunc task, void *args);
-    Soroutine(TaskFunc task, void *args, int stackSize);
-    void setStack(int newSize);
+    Soroutine(int sid);
+    Soroutine(int sid, int size);
+    Soroutine(int sid, int size, TaskFunc task, void *args);
+    void setStackSize(int size);
+    void initContext(ExecutorFunc func);
+    static void routineRunFunc(void *args);
 
     Soroutine()
     {
@@ -27,47 +36,20 @@ public:
 
     ~Soroutine()
     {
-        if (myStack)
+        if (runtimeStack)
         {
-            delete[] myStack;
+            delete[] runtimeStack;
         }
     }
 
-    void setStatus(int status)
-    {
-        this->status = status;
-    }
-
-    void setTask(TaskFunc task, void *args)
+    void setTaskAndArgs(TaskFunc task, void *args)
     {
         this->task = task;
         this->args = args;
     }
 
-    int getSize()
+    uint64_t getSid()
     {
-        return size;
-    }
-
-    int getStackSize()
-    {
-        return alreadySize;
-    }
-
-    TaskFunc getTask()
-    {
-        return task;
-    }
-
-    void *getArgs()
-    {
-        return args;
-    }
-
-    ucontext_t &getContext()
-    {
-        return context;
+        return sid;
     }
 };
-
-#endif

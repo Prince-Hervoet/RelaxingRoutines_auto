@@ -7,22 +7,22 @@
 #include "soroutine.hpp"
 #include "single_list_queue.hpp"
 
-#define DEFAULT_CAPACILITY  1024
-#define MAX_CAPACITY        16384
+#define DEFAULT_CAPACILITY 1024
+#define MAX_CAPACITY 16384
 
-class contextPool
+class BufferPool
 {
 private:
-    int capacity = DEFAULT_CAPACILITY;          //the capacity of pool
+    int capacity = DEFAULT_CAPACILITY; // the capacity of pool
     int remainSize = DEFAULT_CAPACILITY;
-    SingleListQueue<Soroutine> qu;              //quque of the pool
+    SingleListQueue<Soroutine> qu; // quque of the pool
 
 public:
-    contextPool(int size);
-    contextPool();
-    ~contextPool();
-    Soroutine *getContext();
-    bool giveBacktoPool(Soroutine *back);
+    BufferPool(int size);
+    BufferPool();
+    ~BufferPool();
+    Soroutine *getRoutine();
+    bool giveback(Soroutine *back);
     bool giveBacktoPool(SingleListQueue<Soroutine> *back);
     bool changeCapacity(int num);
 
@@ -42,7 +42,7 @@ public:
     }
 };
 
-contextPool::contextPool(int size) : capacity(size), remainSize(size)
+BufferPool::BufferPool(int size) : capacity(size), remainSize(size)
 {
     Soroutine *ptr = nullptr;
     for (int i = 0; i < size; i++)
@@ -52,7 +52,7 @@ contextPool::contextPool(int size) : capacity(size), remainSize(size)
     }
 }
 
-contextPool::contextPool()
+BufferPool::BufferPool()
 {
     Soroutine *ptr = nullptr;
     for (int i = 0; i < capacity; i++)
@@ -62,8 +62,7 @@ contextPool::contextPool()
     }
 }
 
-
-contextPool::~contextPool()
+BufferPool::~BufferPool()
 {
     Soroutine *ptr = nullptr;
     for (int i = 0; i < getRemainSize(); i++)
@@ -75,10 +74,10 @@ contextPool::~contextPool()
 
 /**
  * @brief get soroutine from pool
- * 
- * @return Soroutine* 
+ *
+ * @return Soroutine*
  */
-Soroutine *contextPool::getContext()
+Soroutine *BufferPool::getRoutine()
 {
     Soroutine *out = nullptr;
     if (!poolIsEmpty())
@@ -88,19 +87,19 @@ Soroutine *contextPool::getContext()
     }
     else
     {
-        out = new Soroutine;            //when pool is empty alloc a class
+        out = new Soroutine; // when pool is empty alloc a class
     }
     return out;
 }
 
 /**
- * @brief 
- * 
- * @param back 
+ * @brief
+ *
+ * @param back
  * @return true give back succese
  * @return false when the parament is a null pointer
  */
-bool contextPool::giveBacktoPool(Soroutine *back)
+bool BufferPool::giveback(Soroutine *back)
 {
     if (back == nullptr)
     {
@@ -120,14 +119,14 @@ bool contextPool::giveBacktoPool(Soroutine *back)
     return true;
 }
 
-bool contextPool::giveBacktoPool(SingleListQueue<Soroutine> *back)
+bool BufferPool::giveBacktoPool(SingleListQueue<Soroutine> *back)
 {
     if (back == nullptr)
     {
         return false;
     }
-    
-    //if pool don't have enough space to push
+
+    // if pool don't have enough space to push
     if (back->getSize() > capacity - remainSize)
     {
         SingleListQueue<Soroutine> *x = back->pollMany(back->getSize() - (capacity - remainSize));
@@ -142,7 +141,7 @@ bool contextPool::giveBacktoPool(SingleListQueue<Soroutine> *back)
     return true;
 }
 
-bool contextPool::changeCapacity(int num)
+bool BufferPool::changeCapacity(int num)
 {
     if (num < 0 || num > MAX_CAPACITY)
     {

@@ -1,49 +1,48 @@
-#include "executor.hpp"
-#include <thread>
+#pragma once
+#include <queue>
+#include <mutex>
+#include <ucontext.h>
+#include <condition_variable>
+#include "soroutine.hpp"
+
+class Scheduler;
 
 class RoutineThread
 {
+    friend class Soroutine;
+
 private:
-    Executor *executor;
-    bool isStarted = false;
-    static void threadRunFunc(void *args);
+    bool isStart = false;
+    volatile bool isAccept = false;
+    Soroutine *running;
+    Scheduler *sc;
+    ucontext_t host;
+    std::mutex mu;
+    std::condition_variable cond;
+    volatile uint64_t prevResumeTime;
+    std::queue<Soroutine *> routines;
+    void resumeRoutine(Soroutine *so);
+    void getFromWaitQueue();
+    void stealOther();
+    Soroutine *pollRoutine();
 
 public:
-    RoutineThread();
-    RoutineThread(Executor *executor);
-    ~RoutineThread();
+    static void threadRunFunc(void *args);
     void start();
-    void stop();
-};
-
-RoutineThread::RoutineThread()
-{
-}
-
-RoutineThread::RoutineThread(Executor *executor)
-{
-    this->executor = executor;
-}
-
-RoutineThread::~RoutineThread()
-{
-}
-
-void RoutineThread::start()
-{
-    if (!isStarted)
+    bool getIsAccept();
+    void addRoutine(Soroutine *so);
+    void setBlock()
     {
-        return;
+        isAccept = false;
     }
-    isStarted = true;
-    std::thread(RoutineThread::threadRunFunc, this);
-}
 
-void RoutineThread::threadRunFunc(void *args)
-{
-    RoutineThread *rt = (RoutineThread *)args;
-    // Look for it in the local queue first
-    rt->executor->startRun();
-    // Look for it in the global queue
-    rt->executor->checkGlobalQueue();
-}
+    Soroutine *getRunning()
+    {
+        return running;
+    }
+
+    Scheduler *getSc()
+    {
+        return sc;
+    }
+};

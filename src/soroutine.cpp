@@ -1,43 +1,74 @@
+#include <string.h>
+#include "routine_thread.hpp"
+#include "scheduler.hpp"
 #include "soroutine.hpp"
 
-Soroutine::Soroutine(TaskFunc task, void *args)
+void Soroutine::routineRunFunc(void *args)
 {
-    this->task = task;
-    this->args = args;
-    myStack = new char[STACK_SIZE];
-    alreadySize = STACK_SIZE;
-    status = ROUTINE_READY;
+    RoutineThread *rt = (RoutineThread *)args;
+    Soroutine *running = rt->getRunning();
+    if (running)
+    {
+        try
+        {
+            running->task(args);
+        }
+        catch (std::exception &e)
+        {
+        }
+        running->status = ROUTINE_STATUS_INIT;
+        rt->sc->routinePool->giveback(running);
+    }
 }
 
-Soroutine::Soroutine(TaskFunc task, void *args, int stackSize)
+void Soroutine::initContext(ExecutorFunc func)
 {
-    this->task = task;
-    this->args = args;
-    myStack = new char[stackSize];
-    alreadySize = stackSize;
-    status = ROUTINE_READY;
+    memset(runtimeStack, 0, totalSize);
+    getcontext(&context);
+    context.uc_stack.ss_sp = runtimeStack;
+    context.uc_stack.ss_size = totalSize;
+    context.uc_stack.ss_flags = 0;
+    makecontext(&context, (void (*)())func, 0);
+    status = ROUTINE_STATUS_READY;
 }
 
-void Soroutine::setStack(int newSize)
+void Soroutine::setStackSize(int size)
 {
-    if (newSize <= 0)
     {
-        if (myStack)
+        if (size <= 0 || size == totalSize)
         {
-            delete[] myStack;
+            return;
         }
-        this->size = 0;
-        alreadySize = 0;
-        return;
-    }
-    else if (alreadySize != newSize)
-    {
-        if (myStack)
+        if (runtimeStack)
         {
-            delete[] myStack;
+            delete[] runtimeStack;
+            runtimeStack = new char[size];
+            currentSize = 0;
+            totalSize = size;
         }
-        myStack = new char[newSize];
-        alreadySize = newSize;
-        this->size = 0;
     }
+}
+
+Soroutine::Soroutine(int sid)
+{
+    this->sid = sid;
+}
+
+Soroutine::Soroutine(int sid, int size)
+{
+    size = size <= 0 ? 512 : size;
+    this->sid = sid;
+    this->runtimeStack = new char[size];
+    totalSize = size;
+}
+
+Soroutine::Soroutine(int sid, int size, TaskFunc task, void *args)
+{
+    this->sid = sid;
+    size = size <= 0 ? 512 : size;
+    this->sid = sid;
+    this->runtimeStack = new char[size];
+    totalSize = size;
+    this->task = task;
+    this->args = args;
 }

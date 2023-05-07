@@ -1,47 +1,79 @@
 #include "scheduler.hpp"
-#include "executor.hpp"
-#include <string.h>
-#include <thread>
 
-void Scheduler::addTask(TaskFunc task, void *args)
+Scheduler &Scheduler::getInstance()
 {
-    Soroutine *packing = cp->getContext();
-    if (packing)
-    {
-        packing->setTask(task, args);
-        packing->setStatus(ROUTINE_READY);
-        ucontext_t context = packing->getContext();
-        // todo: set context
-
-        Executor *executor = this->freeExecutors.poll();
-        if (executor)
-        {
-            executor->addToLocalQueue(packing);
-        }
-        else
-        {
-            this->globalTaskQueue.add(*packing);
-        }
-    }
+    static Scheduler s;
+    return s;
 }
 
-void Scheduler::setRoutineInfo(Soroutine *so, TaskFunc task, void *args)
+Soroutine *Scheduler::createRoutine(TaskFunc task, void *args)
+{
+    Soroutine *so = this->routinePool->getRoutine();
+    if (!so)
+    {
+        so = new Soroutine();
+        so->setStackSize(512);
+    }
+    so->setTaskAndArgs(task, args);
+    so->initContext(Soroutine::routineRunFunc);
+    so->status = ROUTINE_STATUS_READY;
+    return so;
+}
+
+void Scheduler::givebackRoutine(Soroutine *so)
 {
     if (!so)
     {
         return;
     }
-    so->setTask(task, args);
+    this->routinePool->giveback(so);
 }
 
-Scheduler::Scheduler()
+void Scheduler::addTask(TaskFunc task, void *args)
 {
-    systemCoreSize = std::thread::hardware_concurrency();
-    for (int i = 0; i < systemCoreSize; i++)
+    Soroutine *so = this->createRoutine(task, args);
+    uint64_t sid = so->getSid();
+    int count = this->rts.size();
+    int index = sid % count;
+    // choose a thread
+    if (rts[index]->getIsAccept())
     {
-        Executor *executor = new Executor();
-        executors.push_back(executor);
+        rts[index]->addRoutine(so);
+        return;
     }
-    cp = new contextPool();
-    sem_init(&sem, 0, systemCoreSize);
+    for (int i = 0; i < count; i++)
+    {
+        if (rts[i]->getIsAccept())
+        {
+            rts[i]->addRoutine(so);
+            return;
+        }
+    }
+    this->createRoutineThread(so);
+}
+
+void Scheduler::createRoutineThread(Soroutine *so)
+{
+    if (!so || rts.size() == MAX_ROUTINE_THREAD)
+    {
+        return;
+    }
+    RoutineThread *n = new RoutineThread();
+    n->start();
+    n->addRoutine(so);
+    rts.push_back(n);
+}
+
+std::vector<Soroutine *> &Scheduler::pollRoutines(int count)
+{
+    std::vector<Soroutine *> *ans = new std::vector<Soroutine *>();
+    std::unique_lock<std::mutex> lock(mu);
+    while (!waitQueue.empty() && count > 0)
+    {
+        Soroutine *so = waitQueue.front();
+        waitQueue.pop();
+        ans->push_back(so);
+        count -= 1;
+    }
+    return *ans;
 }

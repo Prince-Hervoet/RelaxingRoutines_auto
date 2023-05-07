@@ -1,11 +1,4 @@
-#ifndef __SIMPLE_ROURINE_H__
-#define __SIMPLE_ROURINE_H__
-
+#pragma once
 #include "util.hpp"
 
-class Scheduler;
-void simple_start(TaskFunc task, void *args);
-// Scheduler &getScheduler(TaskFunc task);
-void simple_setStack(int size);
-
-#endif
+void simple_start(TaskFunc func, void *args);
