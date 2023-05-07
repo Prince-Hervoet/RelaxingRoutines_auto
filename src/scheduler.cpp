@@ -1,3 +1,4 @@
+#include <thread>
 #include "scheduler.hpp"
 
 Scheduler &Scheduler::getInstance()
@@ -76,4 +77,18 @@ std::vector<Soroutine *> &Scheduler::pollRoutines(int count)
         count -= 1;
     }
     return *ans;
+}
+
+Scheduler::Scheduler()
+{
+    unsigned int core = std::thread::hardware_concurrency();
+    for (int i = 0; i < core; i++)
+    {
+        RoutineThread *rt = new RoutineThread();
+        this->rts.push_back(rt);
+    }
+    for (int i = 0; i < core; i++)
+    {
+        rts[i]->start();
+    }
 }

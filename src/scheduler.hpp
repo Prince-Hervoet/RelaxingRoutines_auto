@@ -24,6 +24,7 @@ private:
     std::vector<Soroutine *> &pollRoutines(int count);
 
 public:
+    Scheduler();
     static Scheduler &getInstance();
     void addTask(TaskFunc task, void *args);
     int getRoutineSize();
