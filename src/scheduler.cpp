@@ -109,12 +109,12 @@ Scheduler::Scheduler()
 {
     this->routinePool = new BufferPool();
     unsigned int core = std::thread::hardware_concurrency();
-    for (int i = 0; i < 1; i++)
+    for (int i = 0; i < core; i++)
     {
         RoutineThread *rt = new RoutineThread(this);
         this->rts.push_back(rt);
     }
-    for (int i = 0; i < 1; i++)
+    for (int i = 0; i < core; i++)
     {
         rts[i]->start();
     }
