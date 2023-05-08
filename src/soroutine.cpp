@@ -36,6 +36,9 @@ void Soroutine::setStackSize(int size)
     }
 }
 
+/**
+ * Allocate stack space and change the state to ready
+ */
 void Soroutine::toReady(int size)
 {
     if (this->status != ROUTINE_STATUS_INIT)

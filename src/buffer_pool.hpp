@@ -15,6 +15,11 @@ class BufferPool
 private:
     int capacity = DEFAULT_CAPACILITY; // the capacity of pool
     int remainSize = DEFAULT_CAPACILITY;
+
+    /**
+     * Why use a stack instead of a queue ?
+     * Consider that using a stack allows you to use soroutines in the ready state with greater probability
+     */
     std::stack<Soroutine *> qu;
     std::mutex mu;
 
