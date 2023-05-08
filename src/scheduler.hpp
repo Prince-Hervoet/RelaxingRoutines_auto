@@ -1,61 +1,35 @@
-#ifndef __SCHEDULER_H__
-#define __SCHEDULER_H__
-
-#include <vector>
+#pragma once
+#include <queue>
+#include <deque>
 #include <mutex>
-#include <semaphore.h>
+#include <vector>
 #include "soroutine.hpp"
-#include "single_list_queue.hpp"
+#include "routine_thread.hpp"
+#include "buffer_pool.hpp"
 
-class Executor;
 class Scheduler
 {
+    friend class Soroutine;
+    friend class RoutineThread;
+
 private:
-    int systemCoreSize = 0;
-    std::vector<Executor *> executors;          // all executors
-    SingleListQueue<Soroutine> globalTaskQueue; // wait queue
-    int taskSize = 0;
-    int stackSize = STACK_SIZE;
+    std::deque<RoutineThread *> rts; // save some routineThreads
+    std::queue<Soroutine *> waitQueue;
+    BufferPool *routinePool;
     std::mutex mu;
-    sem_t sem;
-    Soroutine *createRoutine();
-    void setRoutineInfo(Soroutine *so, TaskFunc task, void *args);
-    void createThread();
-    void distributeRoutine();
-    void checkRoutine();
+    uint64_t incrementId = 0;
+    Soroutine *createRoutine(TaskFunc task, void *args); // create a routine
+    void givebackRoutine(Soroutine *so);
+    void createRoutineThread(Soroutine *so);
+    void pushRoutines(std::vector<Soroutine *> &routines);
+    std::vector<Soroutine *> &pollRoutines(int count);
+    static void monitor(Scheduler *sc);
 
 public:
     Scheduler();
+    static Scheduler &getInstance();
     void addTask(TaskFunc task, void *args);
-    void setStackSize(int size)
-    {
-        mu.lock();
-        if (size > 0)
-        {
-            this->stackSize = size;
-        }
-        mu.unlock();
-    }
-
-    int getStackSize()
-    {
-        return stackSize;
-    }
-
-    int getTaskSize()
-    {
-        return taskSize;
-    }
-
-    int getThreadSize()
-    {
-        return executors.size();
-    }
-
-    int getTaskQueueSize()
-    {
-        return globalTaskQueue.getSize();
-    }
+    int getRoutineSize();
+    void boostrap();
+    void stop();
 };
-
-#endif

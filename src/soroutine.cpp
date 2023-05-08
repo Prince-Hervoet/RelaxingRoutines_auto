@@ -1,43 +1,56 @@
+#include <string.h>
+#include <iostream>
+#include "routine_thread.hpp"
+#include "scheduler.hpp"
 #include "soroutine.hpp"
+
+void Soroutine::routineRunFunc(void *args)
+{
+    RoutineThread *rt = (RoutineThread *)args;
+    Soroutine *running = rt->getRunning();
+    if (running)
+    {
+        try
+        {
+            running->task(args);
+        }
+        catch (std::exception &e)
+        {
+            std::cout << running->sid << ": " << e.what() << std::endl;
+        }
+    }
+}
+
+void Soroutine::setStackSize(int size)
+{
+    if (size <= 0 || size == totalSize)
+    {
+        return;
+    }
+    if (runtimeStack)
+    {
+        delete[] runtimeStack;
+        runtimeStack = new char[size];
+        currentSize = 0;
+        totalSize = size;
+    }
+}
+
+void Soroutine::toReady(int size)
+{
+    if (this->status != ROUTINE_STATUS_INIT)
+    {
+        return;
+    }
+    this->runtimeStack = new char[size];
+    this->totalSize = size;
+    this->currentSize = 0;
+    this->status = ROUTINE_STATUS_READY;
+}
 
 Soroutine::Soroutine(TaskFunc task, void *args)
 {
+    this->sid = increment + 1;
     this->task = task;
     this->args = args;
-    myStack = new char[STACK_SIZE];
-    alreadySize = STACK_SIZE;
-    status = ROUTINE_READY;
-}
-
-Soroutine::Soroutine(TaskFunc task, void *args, int stackSize)
-{
-    this->task = task;
-    this->args = args;
-    myStack = new char[stackSize];
-    alreadySize = stackSize;
-    status = ROUTINE_READY;
-}
-
-void Soroutine::setStack(int newSize)
-{
-    if (newSize <= 0)
-    {
-        if (myStack)
-        {
-            delete[] myStack;
-        }
-        this->size = 0;
-        alreadySize = 0;
-        return;
-    }
-    else if (alreadySize != newSize)
-    {
-        if (myStack)
-        {
-            delete[] myStack;
-        }
-        myStack = new char[newSize];
-        alreadySize = newSize;
-        this->size = 0;
-    }
 }
