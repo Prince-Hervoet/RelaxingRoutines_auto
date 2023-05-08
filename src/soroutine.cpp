@@ -12,7 +12,7 @@ void Soroutine::routineRunFunc(void *args)
     {
         try
         {
-            running->task(args);
+            running->task(running->args);
         }
         catch (std::exception &e)
         {
@@ -36,6 +36,9 @@ void Soroutine::setStackSize(int size)
     }
 }
 
+/**
+ * Allocate stack space and change the state to ready
+ */
 void Soroutine::toReady(int size)
 {
     if (this->status != ROUTINE_STATUS_INIT)
@@ -53,4 +56,5 @@ Soroutine::Soroutine(TaskFunc task, void *args)
     this->sid = increment + 1;
     this->task = task;
     this->args = args;
+    increment++;
 }

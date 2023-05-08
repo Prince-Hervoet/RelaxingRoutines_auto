@@ -4,6 +4,9 @@
 #include "routine_thread.hpp"
 #include "scheduler.hpp"
 
+/**
+ * start a thread
+ */
 void RoutineThread::start()
 {
     if (isStart)
@@ -16,6 +19,9 @@ void RoutineThread::start()
     isAccept = true;
 }
 
+/**
+ *  Functions to execute when a thread is started
+ */
 void RoutineThread::threadRunFunc(void *args)
 {
     RoutineThread *rt = (RoutineThread *)args;
@@ -66,6 +72,9 @@ void RoutineThread::getFromWaitQueue()
     delete &ans;
 }
 
+/**
+ * get a routine and wait for it
+ */
 Soroutine *RoutineThread::pollRoutine()
 {
     std::unique_lock<std::mutex> lock(mu);
@@ -86,6 +95,9 @@ Soroutine *RoutineThread::pollRoutine()
     return so;
 }
 
+/**
+ * start a routine
+ */
 void RoutineThread::resumeRoutine(Soroutine *so)
 {
     if (!so)

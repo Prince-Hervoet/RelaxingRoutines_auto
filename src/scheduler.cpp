@@ -8,6 +8,9 @@ Scheduler &Scheduler::getInstance()
     return s;
 }
 
+/**
+ * Gets a usable coroutine structure
+ */
 Soroutine *Scheduler::createRoutine(TaskFunc task, void *args)
 {
     Soroutine *so = this->routinePool->getRoutine();
@@ -29,6 +32,9 @@ void Scheduler::givebackRoutine(Soroutine *so)
     this->routinePool->giveback(so);
 }
 
+/**
+ * Pick a thread and drop the task into it
+ */
 void Scheduler::addTask(TaskFunc task, void *args)
 {
     Soroutine *so = this->createRoutine(task, args);
@@ -56,6 +62,9 @@ void Scheduler::addTask(TaskFunc task, void *args)
     this->createRoutineThread(so);
 }
 
+/**
+ * create a thread
+ */
 void Scheduler::createRoutineThread(Soroutine *so)
 {
     if (!so || rts.size() == MAX_ROUTINE_THREAD)
@@ -70,7 +79,6 @@ void Scheduler::createRoutineThread(Soroutine *so)
 
 std::vector<Soroutine *> &Scheduler::pollRoutines(int count)
 {
-
     std::vector<Soroutine *> *ans = new std::vector<Soroutine *>();
     mu.lock();
     while (!waitQueue.empty() && count > 0)
@@ -105,6 +113,9 @@ void Scheduler::monitor(Scheduler *sc)
     }
 }
 
+/**
+ * init something
+ */
 Scheduler::Scheduler()
 {
     this->routinePool = new BufferPool();
