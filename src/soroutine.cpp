@@ -16,70 +16,41 @@ void Soroutine::routineRunFunc(void *args)
         }
         catch (std::exception &e)
         {
+            std::cout << running->sid << ": " << e.what() << std::endl;
         }
-        running->status = ROUTINE_STATUS_INIT;
-        rt->sc->routinePool->giveback(running);
-        std::cout << "check 11123" << std::endl;
     }
-}
-
-void Soroutine::initContext()
-{
-    memset(runtimeStack, 0, totalSize);
-    getcontext(&context);
-    context.uc_stack.ss_sp = runtimeStack;
-    context.uc_stack.ss_size = totalSize;
-    context.uc_stack.ss_flags = 0;
-    status = ROUTINE_STATUS_READY;
-}
-
-void Soroutine::setContextLink(ucontext_t &context)
-{
-    context.uc_link = &context;
-}
-
-void Soroutine::setContextMake(ucontext_t &context, void *args)
-{
-    makecontext(&context, (void (*)())Soroutine::routineRunFunc, 1, args);
 }
 
 void Soroutine::setStackSize(int size)
 {
+    if (size <= 0 || size == totalSize)
     {
-        if (size <= 0 || size == totalSize)
-        {
-            return;
-        }
-        if (runtimeStack)
-        {
-            delete[] runtimeStack;
-            runtimeStack = new char[size];
-            currentSize = 0;
-            totalSize = size;
-        }
+        return;
+    }
+    if (runtimeStack)
+    {
+        delete[] runtimeStack;
+        runtimeStack = new char[size];
+        currentSize = 0;
+        totalSize = size;
     }
 }
 
-Soroutine::Soroutine(int sid)
+void Soroutine::toReady(int size)
 {
-    this->sid = sid;
+    if (this->status != ROUTINE_STATUS_INIT)
+    {
+        return;
+    }
+    this->runtimeStack = new char[size];
+    this->totalSize = size;
+    this->currentSize = 0;
+    this->status = ROUTINE_STATUS_READY;
 }
 
-Soroutine::Soroutine(int sid, int size)
+Soroutine::Soroutine(TaskFunc task, void *args)
 {
-    size = size <= 0 ? 512 : size;
-    this->sid = sid;
-    this->runtimeStack = new char[size];
-    totalSize = size;
-}
-
-Soroutine::Soroutine(int sid, int size, TaskFunc task, void *args)
-{
-    this->sid = sid;
-    size = size <= 0 ? 512 : size;
-    this->sid = sid;
-    this->runtimeStack = new char[size];
-    totalSize = size;
+    this->sid = increment + 1;
     this->task = task;
     this->args = args;
 }

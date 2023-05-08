@@ -1,6 +1,9 @@
 #pragma once
-#include "util.hpp"
 #include <ucontext.h>
+#include <atomic>
+#include "util.hpp"
+
+static std::atomic<uint64_t> increment{0};
 
 class Executor;
 class Scheduler;
@@ -22,18 +25,14 @@ private:
     int status = ROUTINE_STATUS_INIT;
 
 public:
-    Soroutine(int sid);
-    Soroutine(int sid, int size);
-    Soroutine(int sid, int size, TaskFunc task, void *args);
+    Soroutine(TaskFunc task, void *args);
     void setStackSize(int size);
-    void initContext();
-    void setContextLink(ucontext_t &context);
-    void setContextMake(ucontext_t &context, void *args);
+    void toReady(int size);
     static void routineRunFunc(void *args);
 
     Soroutine()
     {
-        runtimeStack = new char[512];
+        this->sid = increment + 1;
     }
 
     ~Soroutine()

@@ -1,5 +1,6 @@
 #include <thread>
 #include <iostream>
+#include <string.h>
 #include "routine_thread.hpp"
 #include "scheduler.hpp"
 
@@ -20,12 +21,13 @@ void RoutineThread::threadRunFunc(void *args)
     RoutineThread *rt = (RoutineThread *)args;
     for (;;)
     {
-
         Soroutine *so = rt->pollRoutine();
         rt->prevResumeTime = getNowTimestamp();
         rt->resumeRoutine(so);
+        so->status = ROUTINE_STATUS_READY;
+        rt->sc->routinePool->giveback(so);
+        rt->running = nullptr;
         rt->resumeAccept();
-
         // rt->getFromWaitQueue();
     }
 }
@@ -56,9 +58,7 @@ bool RoutineThread::addRoutine(Soroutine *so)
 
 void RoutineThread::getFromWaitQueue()
 {
-
     std::vector<Soroutine *> &ans = sc->pollRoutines(ONCE_GET_WAIT_COUNT);
-    std::unique_lock<std::mutex> lock(mu);
     for (int i = 0; i < ans.size(); i++)
     {
         this->routines.push(ans[i]);
@@ -71,8 +71,7 @@ Soroutine *RoutineThread::pollRoutine()
     std::unique_lock<std::mutex> lock(mu);
     while (routines.size() == 0)
     {
-
-        // getFromWaitQueue();
+        getFromWaitQueue();
         if (routines.size() == 0)
         {
             cond.wait(lock);
@@ -95,21 +94,23 @@ void RoutineThread::resumeRoutine(Soroutine *so)
     }
     switch (so->status)
     {
-    case ROUTINE_STATUS_INIT:
-        sc->givebackRoutine(so);
-        return;
-    case ROUTINE_STATUS_PENDING:
     case ROUTINE_STATUS_READY:
+        memset(so->runtimeStack, 0, so->totalSize);
+        getcontext(&so->context);
+        so->context.uc_link = &host;
+        so->context.uc_stack.ss_sp = so->runtimeStack;
+        so->context.uc_stack.ss_size = so->totalSize;
+        makecontext(&so->context, (void (*)())Soroutine::routineRunFunc, 1, (void *)this);
+        break;
+    case ROUTINE_STATUS_PENDING:
         break;
     default:
         so->status = ROUTINE_STATUS_INIT;
         sc->givebackRoutine(so);
         return;
     }
-    so->status = ROUTINE_STATUS_RUNNING;
     this->running = so;
-    so->setContextLink(host);
-    so->setContextMake(so->context, (void *)this);
+    so->status = ROUTINE_STATUS_RUNNING;
     swapcontext(&host, &(so->context));
 }
 
@@ -131,4 +132,13 @@ bool RoutineThread::solveTimeout()
         sc->pushRoutines(temp);
     }
     return timeout;
+}
+
+RoutineThread::RoutineThread()
+{
+}
+
+RoutineThread::RoutineThread(Scheduler *sc)
+{
+    this->sc = sc;
 }

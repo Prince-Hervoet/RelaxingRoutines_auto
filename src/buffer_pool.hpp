@@ -2,7 +2,7 @@
 #define __CONTEXTPOOL_H__
 
 #include <mutex>
-#include <queue>
+#include <stack>
 #include <vector>
 #include "soroutine.hpp"
 #include "single_list_queue.hpp"
@@ -15,7 +15,7 @@ class BufferPool
 private:
     int capacity = DEFAULT_CAPACILITY; // the capacity of pool
     int remainSize = DEFAULT_CAPACILITY;
-    std::queue<Soroutine *> qu;
+    std::stack<Soroutine *> qu;
     std::mutex mu;
 
 public:
@@ -38,7 +38,7 @@ public:
 
     inline bool poolIsFull()
     {
-        return remainSize == capacity;
+        return qu.size() == capacity;
     }
 };
 

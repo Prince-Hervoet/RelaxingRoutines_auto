@@ -26,7 +26,7 @@ BufferPool::~BufferPool()
     Soroutine *ptr = nullptr;
     for (int i = 0; i < getRemainSize(); i++)
     {
-        ptr = qu.front();
+        ptr = qu.top();
         qu.pop();
         delete ptr;
     }
@@ -47,7 +47,7 @@ Soroutine *BufferPool::getRoutine()
     std::unique_lock<std::mutex> lock(mu);
     if (qu.size() > 0)
     {
-        out = qu.front();
+        out = qu.top();
         qu.pop();
     }
     return out;
@@ -68,13 +68,10 @@ bool BufferPool::giveback(Soroutine *back)
     }
     if (!poolIsFull())
     {
-        std::cout << "check 2334" << std::endl;
         std::unique_lock<std::mutex> lock(mu);
-
         if (!poolIsFull())
         {
             qu.push(back);
-            remainSize++;
         }
     }
     else
@@ -110,7 +107,7 @@ bool BufferPool::changeCapacity(int num)
             differ = remainSize - num;
             for (int i = 0; i < differ; i++)
             {
-                delete qu.front();
+                delete qu.top();
                 qu.pop();
             }
             remainSize = num;

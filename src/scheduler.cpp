@@ -14,11 +14,9 @@ Soroutine *Scheduler::createRoutine(TaskFunc task, void *args)
     if (!so)
     {
         so = new Soroutine();
-        so->setStackSize(512);
     }
+    so->toReady(READY_STACK_SIZE);
     so->setTaskAndArgs(task, args);
-    so->initContext();
-    so->status = ROUTINE_STATUS_READY;
     return so;
 }
 
@@ -55,7 +53,6 @@ void Scheduler::addTask(TaskFunc task, void *args)
             }
         }
     }
-
     this->createRoutineThread(so);
 }
 
@@ -65,7 +62,7 @@ void Scheduler::createRoutineThread(Soroutine *so)
     {
         return;
     }
-    RoutineThread *n = new RoutineThread();
+    RoutineThread *n = new RoutineThread(this);
     n->start();
     n->addRoutine(so);
     rts.push_back(n);
@@ -76,7 +73,6 @@ std::vector<Soroutine *> &Scheduler::pollRoutines(int count)
 
     std::vector<Soroutine *> *ans = new std::vector<Soroutine *>();
     mu.lock();
-    // std::cout << "check ttt" << std::endl;
     while (!waitQueue.empty() && count > 0)
     {
         Soroutine *so = waitQueue.front();
@@ -113,16 +109,15 @@ Scheduler::Scheduler()
 {
     this->routinePool = new BufferPool();
     unsigned int core = std::thread::hardware_concurrency();
-    for (int i = 0; i < core; i++)
+    for (int i = 0; i < 1; i++)
     {
-        RoutineThread *rt = new RoutineThread();
+        RoutineThread *rt = new RoutineThread(this);
         this->rts.push_back(rt);
     }
-    for (int i = 0; i < core; i++)
+    for (int i = 0; i < 1; i++)
     {
         rts[i]->start();
     }
-    std::cout << "check 2" << std::endl;
     // std::thread t(Scheduler::monitor, this);
     // t.detach();
 }

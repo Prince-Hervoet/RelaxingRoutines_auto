@@ -28,9 +28,10 @@ private:
     void resumeAccept();
 
 public:
+    RoutineThread();
+    RoutineThread(Scheduler *sc);
     static void threadRunFunc(void *args);
     void start();
-
     bool addRoutine(Soroutine *so);
     bool solveTimeout();
     void setBlock()
