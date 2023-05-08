@@ -12,7 +12,7 @@ void Soroutine::routineRunFunc(void *args)
     {
         try
         {
-            running->task(args);
+            running->task(running->args);
         }
         catch (std::exception &e)
         {
@@ -56,4 +56,5 @@ Soroutine::Soroutine(TaskFunc task, void *args)
     this->sid = increment + 1;
     this->task = task;
     this->args = args;
+    increment++;
 }
