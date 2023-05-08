@@ -21,7 +21,9 @@ private:
     Soroutine *createRoutine(TaskFunc task, void *args); // create a routine
     void givebackRoutine(Soroutine *so);
     void createRoutineThread(Soroutine *so);
+    void pushRoutines(std::vector<Soroutine *> &routines);
     std::vector<Soroutine *> &pollRoutines(int count);
+    static void monitor(Scheduler *sc);
 
 public:
     Scheduler();

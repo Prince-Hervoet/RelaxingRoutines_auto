@@ -1,5 +1,6 @@
 #include <thread>
 #include "scheduler.hpp"
+#include <iostream>
 
 Scheduler &Scheduler::getInstance()
 {
@@ -16,7 +17,7 @@ Soroutine *Scheduler::createRoutine(TaskFunc task, void *args)
         so->setStackSize(512);
     }
     so->setTaskAndArgs(task, args);
-    so->initContext(Soroutine::routineRunFunc);
+    so->initContext();
     so->status = ROUTINE_STATUS_READY;
     return so;
 }
@@ -39,17 +40,22 @@ void Scheduler::addTask(TaskFunc task, void *args)
     // choose a thread
     if (rts[index]->getIsAccept())
     {
-        rts[index]->addRoutine(so);
-        return;
+        if (rts[index]->addRoutine(so))
+        {
+            return;
+        }
     }
     for (int i = 0; i < count; i++)
     {
         if (rts[i]->getIsAccept())
         {
-            rts[i]->addRoutine(so);
-            return;
+            if (rts[i]->addRoutine(so))
+            {
+                return;
+            }
         }
     }
+
     this->createRoutineThread(so);
 }
 
@@ -67,8 +73,10 @@ void Scheduler::createRoutineThread(Soroutine *so)
 
 std::vector<Soroutine *> &Scheduler::pollRoutines(int count)
 {
+
     std::vector<Soroutine *> *ans = new std::vector<Soroutine *>();
-    std::unique_lock<std::mutex> lock(mu);
+    mu.lock();
+    // std::cout << "check ttt" << std::endl;
     while (!waitQueue.empty() && count > 0)
     {
         Soroutine *so = waitQueue.front();
@@ -76,11 +84,34 @@ std::vector<Soroutine *> &Scheduler::pollRoutines(int count)
         ans->push_back(so);
         count -= 1;
     }
+    mu.unlock();
     return *ans;
+}
+
+void Scheduler::pushRoutines(std::vector<Soroutine *> &routines)
+{
+    std::unique_lock<std::mutex> lock(mu);
+    for (int i = 0; i < routines.size(); i++)
+    {
+        waitQueue.push(routines[i]);
+    }
+}
+
+void Scheduler::monitor(Scheduler *sc)
+{
+    auto rts = sc->rts;
+    for (;;)
+    {
+        for (int i = 0; i < rts.size(); i++)
+        {
+            rts[i]->solveTimeout();
+        }
+    }
 }
 
 Scheduler::Scheduler()
 {
+    this->routinePool = new BufferPool();
     unsigned int core = std::thread::hardware_concurrency();
     for (int i = 0; i < core; i++)
     {
@@ -91,4 +122,7 @@ Scheduler::Scheduler()
     {
         rts[i]->start();
     }
+    std::cout << "check 2" << std::endl;
+    // std::thread t(Scheduler::monitor, this);
+    // t.detach();
 }

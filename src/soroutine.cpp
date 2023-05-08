@@ -1,4 +1,5 @@
 #include <string.h>
+#include <iostream>
 #include "routine_thread.hpp"
 #include "scheduler.hpp"
 #include "soroutine.hpp"
@@ -18,18 +19,28 @@ void Soroutine::routineRunFunc(void *args)
         }
         running->status = ROUTINE_STATUS_INIT;
         rt->sc->routinePool->giveback(running);
+        std::cout << "check 11123" << std::endl;
     }
 }
 
-void Soroutine::initContext(ExecutorFunc func)
+void Soroutine::initContext()
 {
     memset(runtimeStack, 0, totalSize);
     getcontext(&context);
     context.uc_stack.ss_sp = runtimeStack;
     context.uc_stack.ss_size = totalSize;
     context.uc_stack.ss_flags = 0;
-    makecontext(&context, (void (*)())func, 0);
     status = ROUTINE_STATUS_READY;
+}
+
+void Soroutine::setContextLink(ucontext_t &context)
+{
+    context.uc_link = &context;
+}
+
+void Soroutine::setContextMake(ucontext_t &context, void *args)
+{
+    makecontext(&context, (void (*)())Soroutine::routineRunFunc, 1, args);
 }
 
 void Soroutine::setStackSize(int size)

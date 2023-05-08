@@ -29,7 +29,7 @@ public:
         ListNode<T> *run = head;
         while (run)
         {
-            ListNode *temp = run->next;
+            ListNode<T> *temp = run->next;
             delete run;
             run = temp;
         }
@@ -60,7 +60,7 @@ public:
     {
         if (size == 0)
         {
-            return nullptr
+            return nullptr;
         }
         std::unique_lock<std::mutex> lock(mu);
         ListNode<T> *temp = head->next;

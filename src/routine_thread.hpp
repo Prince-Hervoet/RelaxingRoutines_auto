@@ -25,12 +25,14 @@ private:
     void getFromWaitQueue();
     void stealOther();
     Soroutine *pollRoutine();
+    void resumeAccept();
 
 public:
     static void threadRunFunc(void *args);
     void start();
-    bool getIsAccept();
-    void addRoutine(Soroutine *so);
+
+    bool addRoutine(Soroutine *so);
+    bool solveTimeout();
     void setBlock()
     {
         isAccept = false;
@@ -44,5 +46,10 @@ public:
     Scheduler *getSc()
     {
         return sc;
+    }
+
+    bool getIsAccept()
+    {
+        return isAccept;
     }
 };

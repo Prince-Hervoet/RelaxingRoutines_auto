@@ -9,4 +9,10 @@ void test(void *args)
 int main()
 {
     simple_start(test, nullptr);
+
+    for (;;)
+    {
+    }
+    std::cout << "check asdfasdf" << std::endl;
+    return 0;
 }
