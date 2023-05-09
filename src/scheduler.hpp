@@ -6,6 +6,7 @@
 #include "soroutine.hpp"
 #include "routine_thread.hpp"
 #include "buffer_pool.hpp"
+#include "monitor.hpp"
 
 class Scheduler
 {
@@ -18,6 +19,7 @@ private:
     BufferPool *routinePool;
     std::mutex mu;
     uint64_t incrementId = 0;
+    monitor *mo;
     Soroutine *createRoutine(TaskFunc task, void *args); // create a routine
     void givebackRoutine(Soroutine *so);
     void createRoutineThread(Soroutine *so);

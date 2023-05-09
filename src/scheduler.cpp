@@ -41,6 +41,7 @@ void Scheduler::addTask(TaskFunc task, void *args)
     uint64_t sid = so->getSid();
     int count = this->rts.size();
     int index = sid % count;
+    std::cout << "index:" << index << std::endl;
     // choose a thread
     if (rts[index]->getIsAccept())
     {
@@ -107,6 +108,7 @@ void Scheduler::pushRoutines(std::vector<Soroutine *> &routines)
  */
 Scheduler::Scheduler()
 {
+    this->mo = new monitor();
     this->routinePool = new BufferPool();
     unsigned int core = std::thread::hardware_concurrency();
     for (int i = 0; i < core; i++)
@@ -118,6 +120,7 @@ Scheduler::Scheduler()
     {
         rts[i]->start();
     }
+    mo->start(rts);
     // std::thread t(Scheduler::monitor, this);
     // t.detach();
 }
