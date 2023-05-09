@@ -6,8 +6,6 @@
 #include <signal.h>
 #include "monitor.hpp"
 
-
-
 /**
  * start a thread
  */
@@ -18,7 +16,7 @@ void RoutineThread::start()
         return;
     }
     isStart = true;
-    
+
 #ifdef __unix__
     pthread_create(&id, NULL, (void *(*)(void *))RoutineThread::threadRunFunc, this);
 
@@ -36,7 +34,7 @@ void RoutineThread::start()
     std::thread t(RoutineThread::threadRunFunc, this);
     t.detach();
 #endif
-    
+
     isAccept = true;
 }
 
@@ -51,7 +49,8 @@ void RoutineThread::threadRunFunc(void *args)
         Soroutine *so = rt->pollRoutine();
         rt->prevResumeTime = getNowTimestamp();
         rt->resumeRoutine(so);
-        if(so->status == ROUTINE_STATUS_DEAD) {
+        if (so->status == ROUTINE_STATUS_FINISH)
+        {
             so->status = ROUTINE_STATUS_READY;
             rt->sc->routinePool->giveback(so);
             rt->running = nullptr;
@@ -164,8 +163,6 @@ bool RoutineThread::solveTimeout()
 
 RoutineThread::RoutineThread()
 {
-
-
 }
 
 RoutineThread::RoutineThread(Scheduler *sc)

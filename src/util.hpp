@@ -13,7 +13,7 @@ typedef void (*ExecutorFunc)(void *args);
 #define ROUTINE_STATUS_READY 20   // Allocate stack space to it and transition to the ready status
 #define ROUTINE_STATUS_RUNNING 30 // Set up your environment and start running, changing to running status
 #define ROUTINE_STATUS_PENDING 40 // The runtime is suspended, transitioning to pending status
-#define ROUTINE_STATUS_DEAD 50
+#define ROUTINE_STATUS_FINISH 50  //
 
 /**
  * status code for the

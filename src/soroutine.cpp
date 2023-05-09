@@ -18,7 +18,7 @@ void Soroutine::routineRunFunc(void *args)
         {
             std::cout << running->sid << ": " << e.what() << std::endl;
         }
-        running->status = ROUTINE_STATUS_DEAD;
+        running->status = ROUTINE_STATUS_FINISH;
     }
 }
 
