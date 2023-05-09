@@ -17,6 +17,8 @@ class Scheduler;
 class RoutineThread
 {
     friend class Soroutine;
+    friend class Scheduler;
+    friend class monitor;
 
 private:
 #ifdef __unix__
@@ -33,7 +35,7 @@ private:
     ucontext_t host;
     std::mutex mu;
     std::condition_variable cond;
-    volatile uint64_t prevResumeTime;
+    volatile uint64_t prevResumeTime = -1;
     std::queue<Soroutine *> routines;
     void resumeRoutine(Soroutine *so);
     void getFromWaitQueue();
@@ -48,7 +50,6 @@ public:
     void start();
     bool addRoutine(Soroutine *so);
     bool solveTimeout();
-
     void setBlock()
     {
         isAccept = false;
@@ -68,4 +69,12 @@ public:
     {
         return isAccept;
     }
+    inline pthread_t getId()
+    {
+        return id;
+    }
+private:
+
+
+    
 };

@@ -4,13 +4,9 @@
 #include "routine_thread.hpp"
 #include "scheduler.hpp"
 #include <signal.h>
+#include "monitor.hpp"
 
-#ifdef __unix__
-static void sigHandle(void)
-{
 
-}
-#endif
 
 /**
  * start a thread
@@ -30,7 +26,10 @@ void RoutineThread::start()
     if (res != 0)
     {
         std::cout << "phread_datch failed" << std::endl;
+        return;
     }
+    signal(SIGUSR2, monitor::blockingHandle);
+    std::cout << "register thread id:" << id << std::endl;
 #endif
 
 #ifdef __WIN32
@@ -52,9 +51,12 @@ void RoutineThread::threadRunFunc(void *args)
         Soroutine *so = rt->pollRoutine();
         rt->prevResumeTime = getNowTimestamp();
         rt->resumeRoutine(so);
-        so->status = ROUTINE_STATUS_READY;
-        rt->sc->routinePool->giveback(so);
-        rt->running = nullptr;
+        if(so->status == ROUTINE_STATUS_DEAD) {
+            so->status = ROUTINE_STATUS_READY;
+            rt->sc->routinePool->giveback(so);
+            rt->running = nullptr;
+        }
+
         rt->resumeAccept();
         // rt->getFromWaitQueue();
     }
@@ -155,7 +157,6 @@ bool RoutineThread::solveTimeout()
     std::unique_lock<std::mutex> lock(mu);
     if (prevResumeTime != -1 && prevResumeTime + MAX_TIMEOUT_MS <= now)
     {
-        isAccept = false;
         timeout = true;
     }
     return timeout;

@@ -13,6 +13,7 @@ class Soroutine
 {
     friend class Scheduler;
     friend class RoutineThread;
+    friend class monitor;
 
 private:
     uint64_t sid;        // id

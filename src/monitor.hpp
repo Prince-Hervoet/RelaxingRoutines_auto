@@ -6,31 +6,26 @@
 #include <deque>
 #include <chrono>
 #include <thread>
-#include "scheduler.hpp"
+#include <iostream>
 #include "routine_thread.hpp"
+
 
 class monitor
 {
+public:
+    static RoutineThread *blockThread;
 private:
     /* data */
-
+    pthread_t id;
 public:
-    void startMonit(std::deque<RoutineThread *> &threads);
+    static void startMonit(std::deque<RoutineThread *> &threads);
+    void start(std::deque<RoutineThread *> &threads);
+    void start();
+
+    static void blockingHandle(int sig);
     
-    monitor(/* args */);
+    monitor();
     ~monitor();
 };
-
-
-monitor::monitor(/* args */)
-{
-
-}
-
-monitor::~monitor()
-{
-    
-}
-
 
 #endif
