@@ -16,13 +16,6 @@ typedef void (*ExecutorFunc)(void *args);
 #define ROUTINE_STATUS_FINISH 50  //
 
 /**
- * status code for the
- */
-#define EXECUTOR_STATUS_RUNNING 100
-#define EXECUTOR_STATUS_PENDING 200
-#define EXECUTOR_STATUS_STOP 300
-
-/**
  * status code for the RoutineThread
  */
 #define ROUTINE_THREAD_LEADER 22

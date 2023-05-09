@@ -16,9 +16,9 @@ class Scheduler
 private:
     std::deque<RoutineThread *> rts; // save some routineThreads
     std::queue<Soroutine *> waitQueue;
-    BufferPool *routinePool;
+    BufferPool *routinePool; // routines buffer
     std::mutex mu;
-    uint64_t incrementId = 0;
+    uint64_t incrementId = 0; // set routine id
     monitor *mo;
     Soroutine *createRoutine(TaskFunc task, void *args); // create a routine
     void givebackRoutine(Soroutine *so);
