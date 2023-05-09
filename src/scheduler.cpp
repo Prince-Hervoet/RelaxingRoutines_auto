@@ -101,17 +101,6 @@ void Scheduler::pushRoutines(std::vector<Soroutine *> &routines)
     }
 }
 
-void Scheduler::monitor(Scheduler *sc)
-{
-    auto rts = sc->rts;
-    for (;;)
-    {
-        for (int i = 0; i < rts.size(); i++)
-        {
-            rts[i]->solveTimeout();
-        }
-    }
-}
 
 /**
  * init something

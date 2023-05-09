@@ -3,6 +3,14 @@
 #include <string.h>
 #include "routine_thread.hpp"
 #include "scheduler.hpp"
+#include <signal.h>
+
+#ifdef __unix__
+static void sigHandle(void)
+{
+
+}
+#endif
 
 /**
  * start a thread
@@ -14,8 +22,22 @@ void RoutineThread::start()
         return;
     }
     isStart = true;
+    
+#ifdef __unix__
+    pthread_create(&id, NULL, (void *(*)(void *))RoutineThread::threadRunFunc, this);
+
+    int res = pthread_detach(id);
+    if (res != 0)
+    {
+        std::cout << "phread_datch failed" << std::endl;
+    }
+#endif
+
+#ifdef __WIN32
     std::thread t(RoutineThread::threadRunFunc, this);
     t.detach();
+#endif
+    
     isAccept = true;
 }
 
@@ -135,19 +157,14 @@ bool RoutineThread::solveTimeout()
     {
         isAccept = false;
         timeout = true;
-        std::vector<Soroutine *> temp;
-        for (int i = 0; i < routines.size(); i++)
-        {
-            temp.push_back(routines.front());
-            routines.pop();
-        }
-        sc->pushRoutines(temp);
     }
     return timeout;
 }
 
 RoutineThread::RoutineThread()
 {
+
+
 }
 
 RoutineThread::RoutineThread(Scheduler *sc)
