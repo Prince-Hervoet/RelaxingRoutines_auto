@@ -13,10 +13,9 @@ BufferPool::BufferPool(int size) : capacity(size), remainSize(size)
 
 BufferPool::BufferPool()
 {
-    Soroutine *ptr = nullptr;
     for (int i = 0; i < capacity; i++)
     {
-        ptr = new Soroutine;
+        Soroutine *ptr = new Soroutine;
         qu.push(ptr);
     }
 }
