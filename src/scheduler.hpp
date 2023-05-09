@@ -23,7 +23,6 @@ private:
     void createRoutineThread(Soroutine *so);
     void pushRoutines(std::vector<Soroutine *> &routines);
     std::vector<Soroutine *> &pollRoutines(int count);
-    static void monitor(Scheduler *sc);
 
 public:
     Scheduler();

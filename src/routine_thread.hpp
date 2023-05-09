@@ -5,6 +5,13 @@
 #include <condition_variable>
 #include "soroutine.hpp"
 
+#ifdef __unix__
+#include <signal.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <pthread.h>
+#endif
+
 class Scheduler;
 
 class RoutineThread
@@ -12,6 +19,13 @@ class RoutineThread
     friend class Soroutine;
 
 private:
+#ifdef __unix__
+    pthread_t id;
+#endif
+
+#ifdef _WIN32
+    //window thread id 
+#endif
     bool isStart = false;
     volatile bool isAccept = false;
     Soroutine *running;
@@ -34,6 +48,7 @@ public:
     void start();
     bool addRoutine(Soroutine *so);
     bool solveTimeout();
+
     void setBlock()
     {
         isAccept = false;
