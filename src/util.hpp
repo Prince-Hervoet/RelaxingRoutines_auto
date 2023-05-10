@@ -29,11 +29,8 @@ typedef void (*ExecutorFunc)(void *args);
 #define CORE_ROUTINE_THREAD 16
 #define MAX_TIMEOUT_MS 50
 
-/**
- * get routines from the waitQueue
- */
-#define ONCE_GET_WAIT_COUNT 128
-
 #define READY_STACK_SIZE 16384
+
+#define MAX_ROUTINES_COUNT 512
 
 uint64_t getNowTimestamp();

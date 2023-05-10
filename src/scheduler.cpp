@@ -41,7 +41,6 @@ void Scheduler::addTask(TaskFunc task, void *args)
     uint64_t sid = so->getSid();
     int count = this->rts.size();
     int index = sid % count;
-    std::cout << "index:" << index << std::endl;
     // choose a thread
     if (rts[index]->getIsAccept())
     {
@@ -101,7 +100,6 @@ void Scheduler::pushRoutines(std::vector<Soroutine *> &routines)
         waitQueue.push(routines[i]);
     }
 }
-
 
 /**
  * init something

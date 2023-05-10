@@ -26,7 +26,7 @@ private:
 #endif
 
 #ifdef _WIN32
-    //window thread id 
+    // window thread id
 #endif
     bool isStart = false;
     volatile bool isAccept = false;
@@ -67,14 +67,16 @@ public:
 
     bool getIsAccept()
     {
-        return isAccept;
+        if (routines.size() >= MAX_ROUTINES_COUNT)
+        {
+            return false;
+        }
+        return true;
     }
     inline pthread_t getId()
     {
         return id;
     }
+
 private:
-
-
-    
 };

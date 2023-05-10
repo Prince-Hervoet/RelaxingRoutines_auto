@@ -85,7 +85,7 @@ bool RoutineThread::addRoutine(Soroutine *so)
 
 void RoutineThread::getFromWaitQueue()
 {
-    std::vector<Soroutine *> &ans = sc->pollRoutines(ONCE_GET_WAIT_COUNT);
+    std::vector<Soroutine *> &ans = sc->pollRoutines(123);
     for (int i = 0; i < ans.size(); i++)
     {
         this->routines.push(ans[i]);
@@ -152,7 +152,7 @@ bool RoutineThread::solveTimeout()
     bool timeout = false;
     uint64_t now = getNowTimestamp();
     std::unique_lock<std::mutex> lock(mu);
-    if (prevResumeTime != -1 && prevResumeTime + 50 <= now)
+    if (prevResumeTime != -1 && prevResumeTime + MAX_TIMEOUT_MS <= now)
     {
         timeout = true;
     }
