@@ -3,7 +3,6 @@
 std::map<pthread_t, RoutineThread *> monitor::handlerMap;
 void monitor::blockingHandle(int sig)
 {
-    RoutineThread *tmp = nullptr;
     pthread_t tid = pthread_self();
     RoutineThread *rt = monitor::handlerMap[tid];
     if (rt != nullptr)
