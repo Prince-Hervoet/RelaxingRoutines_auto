@@ -49,15 +49,13 @@ void RoutineThread::threadRunFunc(void *args)
         Soroutine *so = rt->pollRoutine();
         rt->prevResumeTime = getNowTimestamp();
         rt->resumeRoutine(so);
+        rt->prevResumeTime = -1;
         if (so->status == ROUTINE_STATUS_FINISH)
         {
             so->status = ROUTINE_STATUS_READY;
             rt->sc->routinePool->giveback(so);
             rt->running = nullptr;
         }
-
-        rt->resumeAccept();
-        // rt->getFromWaitQueue();
     }
 }
 
@@ -154,7 +152,7 @@ bool RoutineThread::solveTimeout()
     bool timeout = false;
     uint64_t now = getNowTimestamp();
     std::unique_lock<std::mutex> lock(mu);
-    if (prevResumeTime != -1 && prevResumeTime + MAX_TIMEOUT_MS <= now)
+    if (prevResumeTime != -1 && prevResumeTime + 50 <= now)
     {
         timeout = true;
     }

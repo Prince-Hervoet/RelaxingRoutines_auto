@@ -27,7 +27,7 @@ typedef void (*ExecutorFunc)(void *args);
  */
 #define MAX_ROUTINE_THREAD 1024
 #define CORE_ROUTINE_THREAD 16
-#define MAX_TIMEOUT_MS 2000
+#define MAX_TIMEOUT_MS 50
 
 /**
  * get routines from the waitQueue
