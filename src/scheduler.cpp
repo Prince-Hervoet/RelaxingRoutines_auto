@@ -35,7 +35,7 @@ void Scheduler::givebackRoutine(Soroutine *so)
 /**
  * Pick a thread and drop the task into it
  */
-void Scheduler::addTask(TaskFunc task, void *args)
+int Scheduler::addTask(TaskFunc task, void *args)
 {
     Soroutine *so = this->createRoutine(task, args);
     uint64_t sid = so->getSid();
@@ -46,7 +46,7 @@ void Scheduler::addTask(TaskFunc task, void *args)
     {
         if (rts[index]->addRoutine(so))
         {
-            return;
+            return 1;
         }
     }
     for (int i = 0; i < count; i++)
@@ -55,26 +55,36 @@ void Scheduler::addTask(TaskFunc task, void *args)
         {
             if (rts[i]->addRoutine(so))
             {
-                return;
+                return 1;
             }
         }
     }
-    this->createRoutineThread(so);
+    if (this->createRoutineThread(so))
+    {
+        return 1;
+    }
+    return 0;
 }
 
 /**
  * create a thread
  */
-void Scheduler::createRoutineThread(Soroutine *so)
+int Scheduler::createRoutineThread(Soroutine *so)
 {
-    if (!so || rts.size() == MAX_ROUTINE_THREAD)
+    if (!so || rts.size() == MAX_THREAD_COUNT)
     {
-        return;
+        return 0;
+    }
+    std::unique_lock<std::mutex> lock(mu);
+    if (rts.size() == MAX_THREAD_COUNT)
+    {
+        return 0;
     }
     RoutineThread *n = new RoutineThread(this);
     n->start();
     n->addRoutine(so);
     rts.push_back(n);
+    return 1;
 }
 
 std::vector<Soroutine *> &Scheduler::pollRoutines(int count)
@@ -109,12 +119,12 @@ Scheduler::Scheduler()
     this->mo = new monitor();
     this->routinePool = new BufferPool();
     unsigned int core = std::thread::hardware_concurrency();
-    for (int i = 0; i < core; i++)
+    for (int i = 0; i < 1; i++)
     {
         RoutineThread *rt = new RoutineThread(this);
         this->rts.push_back(rt);
     }
-    for (int i = 0; i < core; i++)
+    for (int i = 0; i < 1; i++)
     {
         rts[i]->start();
     }

@@ -31,6 +31,13 @@ typedef void (*ExecutorFunc)(void *args);
 
 #define READY_STACK_SIZE 16384
 
+/**
+ * max routines count
+ */
 #define MAX_ROUTINES_COUNT 512
 
+/**
+ * max threads count
+ */
+#define MAX_THREAD_COUNT 320
 uint64_t getNowTimestamp();

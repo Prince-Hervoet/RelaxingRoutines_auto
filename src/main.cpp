@@ -12,9 +12,9 @@ typedef struct
 void test1(void *args)
 {
     Test *t = (Test *)args;
-    //std::cout << t->a << std::endl;
-    // pthread_kill(pthread_self(), SIGUSR2);
-    std::cout << "send sig to id:" << pthread_self()<< " A" << std::endl;
+    // std::cout << t->a << std::endl;
+    //  pthread_kill(pthread_self(), SIGUSR2);
+    std::cout << "send sig to id:" << pthread_self() << " A" << std::endl;
     int i = 0;
     while (1)
     {

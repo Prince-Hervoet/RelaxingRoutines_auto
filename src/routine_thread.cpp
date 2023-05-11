@@ -74,7 +74,7 @@ void RoutineThread::resumeAccept()
 bool RoutineThread::addRoutine(Soroutine *so)
 {
     std::unique_lock<std::mutex> lock(mu);
-    if (!isAccept)
+    if (!this->getIsAccept())
     {
         return false;
     }

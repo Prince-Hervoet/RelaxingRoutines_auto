@@ -22,14 +22,14 @@ private:
     monitor *mo;
     Soroutine *createRoutine(TaskFunc task, void *args); // create a routine
     void givebackRoutine(Soroutine *so);
-    void createRoutineThread(Soroutine *so);
+    int createRoutineThread(Soroutine *so);
     void pushRoutines(std::vector<Soroutine *> &routines);
     std::vector<Soroutine *> &pollRoutines(int count);
 
 public:
     Scheduler();
     static Scheduler &getInstance();
-    void addTask(TaskFunc task, void *args);
+    int addTask(TaskFunc task, void *args);
     int getRoutineSize();
     void boostrap();
     void stop();
