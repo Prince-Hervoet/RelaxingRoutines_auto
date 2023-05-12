@@ -25,12 +25,15 @@ private:
     int createRoutineThread(Soroutine *so);
     void pushRoutines(std::vector<Soroutine *> &routines);
     std::vector<Soroutine *> &pollRoutines(int count);
+    void boostrap();
 
 public:
     Scheduler();
     static Scheduler &getInstance();
     int addTask(TaskFunc task, void *args);
-    int getRoutineSize();
-    void boostrap();
-    void stop();
+
+    int getRoutineSize()
+    {
+        return rts.size();
+    }
 };

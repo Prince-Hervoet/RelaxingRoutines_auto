@@ -116,6 +116,11 @@ void Scheduler::pushRoutines(std::vector<Soroutine *> &routines)
  */
 Scheduler::Scheduler()
 {
+    this->boostrap();
+}
+
+void Scheduler::boostrap()
+{
     this->mo = new monitor();
     this->routinePool = new BufferPool();
     unsigned int core = std::thread::hardware_concurrency();
@@ -129,6 +134,4 @@ Scheduler::Scheduler()
         rts[i]->start();
     }
     mo->start(rts);
-    // std::thread t(Scheduler::monitor, this);
-    // t.detach();
 }

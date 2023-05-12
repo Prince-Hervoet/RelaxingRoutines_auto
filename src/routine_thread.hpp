@@ -46,10 +46,12 @@ private:
 public:
     RoutineThread();
     RoutineThread(Scheduler *sc);
-    static void threadRunFunc(void *args);
     void start();
-    bool addRoutine(Soroutine *so);
     bool solveTimeout();
+    bool getIsAccept();
+    bool addRoutine(Soroutine *so);
+    static void threadRunFunc(void *args);
+
     void setBlock()
     {
         isAccept = false;
@@ -65,14 +67,6 @@ public:
         return sc;
     }
 
-    bool getIsAccept()
-    {
-        if (routines.size() >= MAX_ROUTINES_COUNT)
-        {
-            return false;
-        }
-        return true;
-    }
     inline pthread_t getId()
     {
         return id;

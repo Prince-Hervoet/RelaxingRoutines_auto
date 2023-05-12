@@ -167,3 +167,16 @@ RoutineThread::RoutineThread(Scheduler *sc)
 {
     this->sc = sc;
 }
+
+/**
+ * Determines whether the current thread is fully loaded
+ * Not thread-safe, note
+ */
+bool RoutineThread::getIsAccept()
+{
+    if (routines.size() >= MAX_ROUTINES_COUNT)
+    {
+        return false;
+    }
+    return true;
+}
