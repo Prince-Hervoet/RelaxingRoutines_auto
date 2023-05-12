@@ -59,18 +59,6 @@ void RoutineThread::threadRunFunc(void *args)
     }
 }
 
-void RoutineThread::resumeAccept()
-{
-    if (isAccept)
-    {
-        return;
-    }
-    mu.lock();
-    isAccept = true;
-    prevResumeTime = -1;
-    mu.unlock();
-}
-
 bool RoutineThread::addRoutine(Soroutine *so)
 {
     std::unique_lock<std::mutex> lock(mu);

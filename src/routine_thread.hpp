@@ -41,7 +41,6 @@ private:
     void getFromWaitQueue();
     void stealOther();
     Soroutine *pollRoutine();
-    void resumeAccept();
 
 public:
     RoutineThread();

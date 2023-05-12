@@ -16,13 +16,6 @@ typedef void (*ExecutorFunc)(void *args);
 #define ROUTINE_STATUS_FINISH 50  //
 
 /**
- * status code for the RoutineThread
- */
-#define ROUTINE_THREAD_LEADER 22
-#define ROUTINE_THREAD_HELPER 33
-#define ROUTINE_THREAD_PENDING 44
-
-/**
  * some information
  */
 #define MAX_ROUTINE_THREAD 1024
